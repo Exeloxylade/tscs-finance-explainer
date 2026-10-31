@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="lib/d3.min.js"></script>
+<script src="lib/tscs.js"></script>
+<script src="lib/fchart.js"></script>
+<script src="assets/timing.js"></script>
+<script src="assets/banks_d.js"></script>
+<script src="assets/bri_d.js"></script>
+<style>
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-Regular.ttf");font-weight:400;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-SemiBold.ttf");font-weight:600;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-Bold.ttf");font-weight:700;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-ExtraBold.ttf");font-weight:800;}
+  /* measured from the reference frame: paper #ebeae7, accent #8b1a2b, card border #c8323e */
+  :root{--bg:#e9e8e6;--ink:#1c1c1c;--sub:#5e5b57;--red:#8b1a2b;--frame:#c8323e;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);}
+  #root{position:relative;width:1920px;height:1080px;background:var(--bg);font-family:"Pop",sans-serif;color:var(--ink);overflow:hidden;}
+  .full{position:absolute;left:0;top:0;width:1920px;height:1080px;}
+  #title{position:absolute;left:90px;top:62px;font-size:52px;font-weight:800;color:var(--red);letter-spacing:-0.01em;opacity:0;}
+  #sub{position:absolute;left:205px;top:183px;font-size:24px;color:var(--sub);opacity:0;}
+  #brand{position:absolute;right:90px;top:44px;text-align:right;}
+  #brand .b1{font-family:Georgia,"Times New Roman",serif;font-size:40px;color:var(--red);letter-spacing:0.04em;}
+  #brand .b2{font-size:20px;color:#3a3835;margin-top:2px;}
+  .pc{position:absolute;width:220px;height:135px;border:4px solid var(--frame);background:#222;box-shadow:0 10px 24px rgba(0,0,0,0.22);opacity:0;}
+  .pc img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pc .nt{position:absolute;left:-2px;bottom:-34px;background:#1c1c1c;color:#fff;font-size:18px;font-weight:700;letter-spacing:0.08em;padding:6px 14px;}
+  .pc .nt.lt{background:#3d3b39;}
+  .pc .blank{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1f3a73;color:#fff;font-size:54px;font-weight:800;letter-spacing:0.06em;}
+  .bk{position:absolute;left:1490px;max-width:360px;background:#1c1c1c;color:#fff;font-size:28px;font-weight:700;line-height:1.2;padding:16px 18px;opacity:0;}
+  #stamp{position:absolute;left:488px;top:262px;background:var(--red);color:#fff;font-size:40px;font-weight:800;padding:12px 32px;border-radius:6px;box-shadow:0 12px 26px rgba(0,0,0,0.25);transform-origin:left center;opacity:0;}
+  #src{position:absolute;left:90px;bottom:34px;font-size:18px;color:var(--sub);}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="26.84" data-width="1920" data-height="1080">
+  <svg id="bg" class="full clip" data-start="0" data-duration="26.84" viewBox="0 0 1920 1080"></svg>
+  <svg id="chart" class="full clip" data-start="0" data-duration="26.84" viewBox="0 0 1920 1080"></svg>
+  <div id="ui" class="full clip" data-start="0" data-duration="26.84" data-layout-allow-overflow>
+    <div id="title">Before MSCI acted, the banks were already falling</div>
+    <div id="sub">Share price, rebased: 30 Sep 2024 = 100</div>
+    <div class="pc" id="pc1" style="left:288px;top:280px;transform:rotate(-2deg)"><img src="assets/bri.jpg"><div class="nt">BRI</div></div>
+    <div class="pc" id="pc2" style="left:540px;top:274px;transform:rotate(1.5deg)"><div class="blank">BCA</div><div class="nt">BCA</div></div>
+    <div class="pc" id="pc3" style="left:790px;top:298px;transform:rotate(-1deg)"><img src="assets/mandiri.jpg"><div class="nt lt">MANDIRI</div></div>
+    <div class="bk" id="k1" style="top:470px">Before MSCI acted</div>
+    <div class="bk" id="k2" style="top:560px">Every big bank lower</div>
+    <div class="bk" id="k3" style="top:350px">The index tracks the whole market</div>
+    <div class="bk" id="k4" style="top:470px">Banks sliding</div>
+    <div class="bk" id="k5" style="top:560px">Market climbing</div>
+    <div id="stamp">INDEX +19%</div>
+    <div id="brand"><div class="b1">YOUR CHANNEL</div><div class="b2">Market analysis</div></div>
+    <div id="src">Data: Yahoo Finance. Photos: Wikimedia Commons</div>
+  </div>
+  <audio id="voice" class="clip" src="assets/voice.wav" data-start="0" data-duration="26.84" data-volume="1.0"></audio>
+  <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="26.84" data-volume="0.12" data-fade-out="1.5"></audio>
+  <audio id="p1" class="clip" src="assets/pop.wav" data-start="9.2" data-duration="0.2" data-volume="0.5"></audio>
+  <audio id="p2" class="clip" src="assets/pop.wav" data-start="9.6" data-duration="0.2" data-volume="0.5"></audio>
+  <audio id="p3" class="clip" src="assets/pop.wav" data-start="10.0" data-duration="0.2" data-volume="0.5"></audio>
+  <audio id="p4" class="clip" src="assets/impact.wav" data-start="19.4" data-duration="2.2" data-volume="0.45"></audio>
+  <audio id="w1" class="clip" src="assets/whoosh_a.wav" data-start="15.1" data-duration="0.9" data-volume="0.4"></audio>
+</div>
+<script>
+const el = (id) => document.getElementById(id), R = FC.ramp, NS = "http://www.w3.org/2000/svg";
+TSCS.init(); const cue = TSCS.cue;
+
+TSCS.topo(el("bg"), { seed: 5, levels: 34, scale: 1600, octaves: 3, stroke: "#c6c2bd", width: 2.6 });
+
+/* ---- the chart (measured box: x 205..1250, y(120)=307, y(60)=835) ---- */
+const D = window.__DATA, s = (id) => D.banks_d.series.find((q) => q.id === id), bri = D.bri_d.series[0];
+const pct = (v) => (v - 100 > 0 ? "+" : "\u2212") + Math.abs(Math.round(v - 100)) + "%";
+const tBanks = cue("a", "banks");
+const chart = FC.line({ svg: el("chart"), x: 205, y: 307, w: 1015, h: 528, pad: 0, yDomain: [60, 120],
+  yTickValues: [60, 70, 80, 90, 100, 110, 120], yFormat: (v) => v, axisSize: 32, yLabelGap: 22,
+  baseline: true, baselineDy: 45, xLabelDy: 88, curve: "linear", marker: "ring", labelSize: 30, labelDx: 18,
+  labelAtEnd: true, labelGap: 56, endLabels: true,
+  xTickValues: [["2024-10-07", "Oct 2024"], ["2025-04-01", "Apr 2025"], ["2025-10-01", "Oct 2025"], ["2026-01-20", "MSCI freeze"]],
+  theme: { bg: "#ebeae7", grid: "#d3cfca", sub: "#4a4744", xInk: "#3a3835" },
+  start: tBanks, end: tBanks + 2.0,
+  series: [
+    { label: "BRI", color: "#c9bfb3", width: 3, points: bri.points, valueLabel: pct },
+    { label: "BCA", color: "#9f968b", width: 3, points: s("BBCA.JK").points, valueLabel: pct },
+    { label: "Index", color: "#8c8782", width: 3.5, points: s("^JKSE").points, valueLabel: pct,
+      start: cue("c", "add"), end: cue("c", "add") + 2.0 },
+    { label: "Mandiri", color: "#8b1a2b", width: 6, points: s("BMRI.JK").points, valueLabel: pct } ] });
+
+function bk(id, t, on) { const a = R(t, on, on + 0.3); el(id).style.opacity = a.toFixed(3);
+  el(id).style.transform = `translateX(${((1 - a) * 24).toFixed(1)}px)`; }
+function card(id, t, on, off, rot) { const a = R(t, on, on + 0.35) * (1 - R(t, off, off + 0.35));
+  el(id).style.opacity = a.toFixed(3);
+  el(id).style.transform = `rotate(${rot}deg) translateY(${((1 - R(t, on, on + 0.35)) * 26).toFixed(1)}px) scale(${(0.92 + 0.08 * R(t, on, on + 0.35)).toFixed(3)})`; }
+
+function renderAt(t) {
+  const a = R(t, 0.2, 0.6); el("title").style.opacity = a.toFixed(3); el("sub").style.opacity = a.toFixed(3);
+  chart.draw(t);
+  // stack 1: bank beats
+  const clear1 = 1 - R(t, 14.5, 14.8);
+  bk("k1", t, cue("b", "MSCI")); el("k1").style.opacity *= clear1;
+  bk("k2", t, cue("b", "lower")); el("k2").style.opacity *= clear1;
+  card("pc1", t, cue("b", "every"), 14.4, -2); card("pc2", t, cue("b", "every") + 0.4, 14.45, 1.5); card("pc3", t, cue("b", "every") + 0.8, 14.5, -1);
+  // stack 2: index beats
+  bk("k3", t, cue("c", "market")); bk("k4", t, cue("d", "sliding")); bk("k5", t, cue("d", "climbed"));
+  const st = R(t, cue("c", "nineteen"), cue("c", "nineteen") + 0.25);
+  el("stamp").style.opacity = st.toFixed(3);
+  el("stamp").style.transform = `rotate(-2deg) scale(${(1.25 - 0.25 * st).toFixed(3)})`;
+}
+window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+renderAt(0);
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true }); tl.to({}, { duration: 26.84 }, 0); window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

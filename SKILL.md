@@ -131,6 +131,21 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
   their numbers - is for learning or a private remake, not for re-publishing as your own.
   Swap owned footage/logos for free or original assets before anything goes public.
 
+## Technique: data line chart with photo cards (measured, eye-checked)
+Template `templates\technique-linechart.html` (27 s, own script). Numbers measured at 1920x1080:
+- Paper `#e9e8e6`, contour lines `TSCS.topo({levels:34, scale:1600, octaves:3, stroke:"#c6c2bd", width:2.6})`.
+- Title Poppins ExtraBold 52 px, all accent red `#8b1a2b`, x 90 / top 62. Note line Poppins 24 px grey at x 205 / top 183.
+- Plot x 205..1220, y(120)=307, y(60)=835; ticks every 10; axis text 32 px; baseline 45 px under the plot.
+- Lines are RAW daily closes (`curve:"linear"`): hero red 6 px, others grey/tan 3-3.5 px; hollow ring end markers r 9;
+  end labels 30 px bold in the line colour, shown only once the line finishes, 56 px apart.
+- Bank lines draw in 2.0 s from the word naming them; the comparison line arrives on its own word, also 2.0 s.
+- Photo cards 220x135, 4 px border `#c8323e`, tilted -2 / +1.5 / -1 deg, black name tab under the left edge,
+  pop in 0.4 s apart (rise 26 px + scale 0.92 -> 1), cleared before the next line arrives.
+- Black notes `#1c1c1c`, Poppins Bold 28 px, x 1490, width fits text (max 360), stacked 90 px apart, slide in 24 px.
+- Stamp: red, ExtraBold 40 px, rotated -2 deg, lands from scale 1.25 on the number word, impact SFX.
+- Something new appears every 1-2 s. No camera move on this scene.
+Fonts: Poppins (OFL, Google Fonts) in `lib/fonts`, loaded with @font-face - system fonts do not match.
+
 ## Full news explainer template (best result so far)
 `templates\news-explainer.html` - 2 min 24 s, 20 scenes, own script + own edge-tts voice,
 tested 2026-10-31 (`videos\indo-crash`, -14.9 LUFS, peak -1.45 dBTP). Uses every skill:

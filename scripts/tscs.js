@@ -368,5 +368,30 @@
     });
   };
 
+  // ---- real topographic background: isolines of a smooth noise field (needs D3 v7) ----
+  // TSCS.topo(svg, {W,H, seed, levels, cell, stroke, width}) - marching squares via d3.contours,
+  // so the lines close into loops, bunch on "slopes" and spread on "flats" like a real map.
+  TSCS.topo = function (svg, o) {
+    o = Object.assign({ W: 1920, H: 1080, seed: 7, levels: 34, cell: 8, stroke: "#c9c4bf", width: 2.2 }, o || {});
+    const NSs = "http://www.w3.org/2000/svg", nx = Math.ceil(o.W / o.cell) + 2, ny = Math.ceil(o.H / o.cell) + 2;
+    let s = o.seed >>> 0; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+    const waves = Array.from({ length: o.octaves || 4 }, (_, i) => ({ fx: (0.7 + rnd() * 0.6) / ((o.scale || 1500) / (1 + i * 0.9)),
+      fy: (0.7 + rnd() * 0.6) / ((o.scale || 1500) * 0.8 / (1 + i * 0.9)), ph: rnd() * 6.283, a: 1 / (1 + i * 1.6), r: rnd() * 6.283 }));
+    const v = new Float64Array(nx * ny);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const x = i * o.cell, y = j * o.cell; let z = 0;
+      for (const w of waves) { const u = x * Math.cos(w.r) - y * Math.sin(w.r), q = x * Math.sin(w.r) + y * Math.cos(w.r);
+        z += w.a * Math.sin(u * w.fx * 6.283 + w.ph) * Math.cos(q * w.fy * 6.283 + w.ph * 0.7); }
+      v[j * nx + i] = z;
+    }
+    const ext = d3.extent(v), th = d3.range(o.levels).map((k) => ext[0] + (ext[1] - ext[0]) * (k + 0.5) / o.levels);
+    const path = d3.geoPath(d3.geoIdentity().scale(o.cell).translate([-o.cell, -o.cell]));
+    d3.contours().size([nx, ny]).smooth(true).thresholds(th)(v).forEach((c) => {
+      const p = document.createElementNS(NSs, "path");
+      p.setAttribute("d", path(c)); p.setAttribute("fill", "none"); p.setAttribute("stroke", o.stroke);
+      p.setAttribute("stroke-width", o.width); p.setAttribute("stroke-linejoin", "round"); svg.appendChild(p);
+    });
+  };
+
   window.TSCS = TSCS;
 })();
