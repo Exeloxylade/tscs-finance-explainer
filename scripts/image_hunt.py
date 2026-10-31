@@ -18,7 +18,7 @@ list and clear anything that is not free (the 'licence' column says which).
 For images NOT on Commons (press photos, company media kits, news agencies) put the file in
 assets yourself and add its source to credits.json - see the skill's sourcing table.
 """
-import argparse, json, os, re, subprocess, sys, urllib.parse, urllib.request
+import argparse, json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 
 UA = {"User-Agent": "kirocrew-video-automation/1.0 (image hunt)"}
 API = "https://commons.wikimedia.org/w/api.php"
@@ -79,10 +79,16 @@ def sheet(cands, out, name):
     files = []
     for i, c in enumerate(cands):
         p = os.path.join(tdir, "%02d.jpg" % i)
-        try:
-            open(p, "wb").write(get(c["thumb"], raw=True))
-        except Exception:
+        ok = False
+        for wait in (0, 1.5, 4, 8):          # upload.wikimedia.org throttles bursts (HTTP 429)
+            if wait: time.sleep(wait)
+            try:
+                open(p, "wb").write(get(c["thumb"], raw=True)); ok = True; break
+            except Exception:
+                pass
+        if not ok:
             continue
+        time.sleep(0.25)
         lab = os.path.join(tdir, "L%02d.jpg" % i)
         txt = ("%d  %dx%d  %s" % (i, c["w"], c["h"], c["licence"][:14])).replace(":", "\\:")
         subprocess.run([FF, "-y", "-i", p, "-vf", "scale=360:240:force_original_aspect_ratio=decrease,"

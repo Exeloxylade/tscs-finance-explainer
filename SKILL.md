@@ -131,6 +131,33 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
   their numbers - is for learning or a private remake, not for re-publishing as your own.
   Swap owned footage/logos for free or original assets before anything goes public.
 
+## Voice with feeling (Gemini, via Automated Lunch Free)
+edge-tts reads flat. Use the Gemini voice the user already set up in Automated Lunch Free; it takes
+a delivery direction (lean in on numbers, pause before twists, stress one word per sentence).
+```
+cd "D:\Agentic AI\Automated Lunch Free"
+Start-Process node_modules\electron\dist\electron.exe -ArgumentList 'scripts/voice-script.js --script "<proj>\script.json" --out "<proj>\voice_gemini"' -WorkingDirectory (Get-Location) -RedirectStandardOutput $log -WindowStyle Hidden
+```
+- One continuous take (even voice), saved keys + key rotation, Whisper + the app's aligner for word times.
+- Writes `voice.wav`, `timing.json`, `timing.js` in the same shape as `tts.py` - films need no change.
+- Script text may hold `<short pause>` / `<long pause>`; per segment `"pause_after": "short|long"`.
+- Default voice `en-us-enzo` (storyteller); `--style "..."` overrides the direction. Keys are never printed.
+- Then normalise TWO-PASS (`loudnorm` measure, then `linear=true`) to -14; one pass undershoots ~2 dB.
+Tested: 342 words, 134 s, Whisper matched 336; loudness range 4.6 LU vs 3.7 for edge-tts.
+
+## Cue-driven film (every time follows the voice)
+`templates\film.html` + `scripts\build_film.py`: the film never holds a hand-typed second. JS uses
+`S(seg)`, `E(seg)`, `W(seg, word)` from timing.js; `<video>`/`<audio>` start times are tokens
+(`__DUR__`, `__BOARD__`, `<!--SFX-->`) that `build_film.py` fills from timing.json. New voice take ->
+`python build_film.py` -> render. Motion helpers in the template (use them on every element):
+`scene()` slide-in/out, `card()` pop with overshoot + Ken Burns push on its photo, `bk()` note slide,
+`stamp()` drop-in, `title()` headline rising out of a mask, `count()` numbers counting to the spoken
+value, `bg()` full-bleed photo with slow push + drift, `flow()` dots travelling between boxes,
+red diagonal `wipe` into chapter slates. Rule: a real photo or footage in EVERY scene
+(`image_hunt.py`), something new on screen every 1-2 s.
+SFX level: swish 0.22, thud 0.32, tick 0.30 (peaks ~17 dB under the voice). At a cut that starts a
+new sentence the voice itself dominates `sfx_probe.py`, so check SFX against a voice-only run.
+
 ## Technique: transition sound (measured)
 Reference transitions (first 3 min, 13 cuts): bright part ~0.2 s, +19.4 dB in 4-8 kHz over its surroundings,
 +4.9 dB low body. The old 0.9 s whoosh was 3.5x longer and played at 0.45-0.6 under a -1 dBFS peak.

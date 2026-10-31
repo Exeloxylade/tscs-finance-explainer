@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="lib/d3.min.js"></script>
+<script src="lib/tscs.js"></script>
+<script src="lib/fchart.js"></script>
+<script src="assets/timing.js"></script>
+<script src="assets/banks_d.js"></script>
+<script src="assets/bri_d.js"></script>
+<script src="assets/rupiah.js"></script>
+<script src="assets/jci_ytd.js"></script>
+<script src="assets/indo-track-win.js"></script>
+<script src="assets/credits.js"></script>
+<style>
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-Regular.ttf");font-weight:400;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-SemiBold.ttf");font-weight:600;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-Bold.ttf");font-weight:700;}
+  @font-face{font-family:"Pop";src:url("lib/fonts/Poppins-ExtraBold.ttf");font-weight:800;}
+  :root{--bg:#e9e8e6;--ink:#1c1c1c;--sub:#5e5b57;--red:#8b1a2b;--frame:#c8323e;--dk:#101216;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:#000;}
+  #root{position:relative;width:1920px;height:1080px;font-family:"Pop",sans-serif;color:var(--ink);background:var(--bg);overflow:hidden;}
+  .full{position:absolute;left:0;top:0;width:1920px;height:1080px;}
+  #paper{z-index:0;background:var(--bg);}
+  #night{z-index:1;background:var(--dk);opacity:0;}
+  .bgimg{position:absolute;left:0;top:0;width:1920px;height:1080px;object-fit:cover;opacity:0;transform-origin:50% 50%;}
+  #bgHost{z-index:1;}
+  #mapvid{z-index:2;object-fit:cover;filter:brightness(0.55) saturate(0.85);opacity:0;}
+  #outline{z-index:3;}
+  #charts{z-index:4;}
+  .scene{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:5;opacity:0;}
+  .card{position:absolute;border:4px solid var(--frame);background:#222;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,0.35);opacity:0;}
+  .card img,.card video{width:100%;height:100%;object-fit:cover;display:block;transform-origin:50% 50%;}
+  .card .nt{position:absolute;left:-2px;bottom:-2px;background:#1c1c1c;color:#fff;font-size:18px;font-weight:700;letter-spacing:0.08em;padding:6px 14px;text-transform:uppercase;}
+  .card.big .nt{font-size:20px;}
+  .ttl{position:absolute;left:90px;top:62px;max-width:1300px;}
+  .ttl .k{font-size:22px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);overflow:hidden;}
+  .ttl .h{font-size:52px;font-weight:800;line-height:1.08;margin-top:6px;color:var(--red);overflow:hidden;}
+  .ttl .h span.i{display:inline-block;}
+  .ttl .s{font-size:24px;color:var(--sub);margin-top:12px;line-height:1.4;}
+  .dark .h{color:#f3f1ec;} .dark .k{color:#ff6b80;} .dark .s{color:#c9c4ba;}
+  .bk{position:absolute;max-width:380px;background:#1c1c1c;color:#fff;font-size:28px;font-weight:700;line-height:1.2;padding:14px 18px;opacity:0;}
+  .stamp{position:absolute;background:var(--red);color:#fff;font-size:40px;font-weight:800;padding:12px 30px;border-radius:6px;box-shadow:0 12px 26px rgba(0,0,0,0.28);transform-origin:left center;opacity:0;white-space:nowrap;}
+  .big{position:absolute;font-weight:800;letter-spacing:-0.02em;line-height:1.0;}
+  .doc{position:absolute;background:#fbfaf6;border:1px solid #d8d3c8;box-shadow:0 18px 50px rgba(0,0,0,0.25);padding:26px 32px;font-family:Georgia,"Times New Roman",serif;color:#222;opacity:0;}
+  .doc .dk{font-family:"Pop";font-size:15px;font-weight:700;letter-spacing:0.12em;color:var(--red);text-transform:uppercase;border-bottom:1px solid #e1dcd2;padding-bottom:8px;}
+  .doc .dt{font-size:34px;line-height:1.35;margin-top:14px;}
+  .hl{background:linear-gradient(90deg,rgba(200,50,62,0.30) 0 var(--p,0%),transparent var(--p,0%));padding:0 3px;}
+  .menu{position:absolute;left:1020px;top:220px;width:760px;background:#fbfaf6;border:3px solid var(--red);padding:22px 32px;box-shadow:0 18px 50px rgba(0,0,0,0.18);}
+  .menu .mh{font-family:Georgia,serif;font-size:30px;letter-spacing:0.2em;text-align:center;color:var(--red);border-bottom:2px solid var(--red);padding-bottom:10px;}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:18px 6px;border-bottom:1px solid #e3ded4;opacity:0;}
+  .row .rl{font-size:34px;font-weight:800;} .row .rs{font-size:19px;color:var(--sub);}
+  .row img{height:38px;margin-left:10px;border:1px solid #ccc;}
+  .row.hot{background:rgba(200,50,62,0.10);}
+  .box{position:absolute;background:#ddd8cf;border-radius:6px;padding:22px 26px;text-align:center;opacity:0;}
+  .box .bh{font-size:30px;font-weight:800;} .box .bs{font-size:19px;color:var(--sub);margin-top:4px;}
+  .owner{position:absolute;width:210px;height:140px;background:#ddd8cf;border:2px dashed #a59d90;border-radius:6px;text-align:center;padding-top:30px;opacity:0;}
+  .owner b{font-size:38px;} .owner div{font-size:17px;color:var(--sub);}
+  .person{position:absolute;width:400px;opacity:0;}
+  .person .card{position:relative;width:400px;height:400px;opacity:1;}
+  .person .nm{margin-top:14px;font-size:28px;font-weight:800;color:#f3f1ec;}
+  .person .rl2{font-size:19px;color:#c9c4ba;}
+  .silh{width:100%;height:100%;background:#1d222c;display:flex;align-items:center;justify-content:center;font-size:110px;font-weight:800;color:#3a4150;}
+  .slate{position:absolute;inset:0;background:var(--dk);color:#f3f1ec;}
+  .slate .n{position:absolute;left:120px;top:330px;font-size:150px;font-weight:800;color:#ff5a72;line-height:0.9;}
+  .slate .t{position:absolute;left:120px;top:490px;font-size:70px;font-weight:800;line-height:1.05;}
+  .slate .s{position:absolute;left:124px;top:660px;font-size:26px;color:#b9b4ab;}
+  .wipe{position:absolute;left:-400px;top:-200px;width:260px;height:1500px;background:#c8323e;transform:rotate(14deg);z-index:9;}
+  #brand{position:absolute;right:90px;top:44px;z-index:9;text-align:right;}
+  #brand .b1{font-family:Georgia,serif;font-size:40px;letter-spacing:0.04em;color:var(--red);}
+  #brand .b2{font-size:19px;color:#3a3835;}
+  #brand.on .b1{color:#ff7b8e;} #brand.on .b2{color:#d7d2c9;}
+  #src{position:absolute;left:90px;bottom:34px;z-index:9;font-size:18px;color:var(--sub);}
+  #src.on{color:#c9c4ba;}
+  #capHost{position:absolute;left:0;right:0;bottom:92px;height:90px;z-index:8;text-align:center;}
+  .tcap{display:none;font-size:38px;font-weight:700;padding:0 300px;color:#1c1c1c;-webkit-text-stroke:7px #e9e8e6;paint-order:stroke fill;}
+  .tcap .tw{display:inline-block;opacity:0.45;margin:0 3px;} .tcap .tw.on{opacity:1;} .tcap .tw.now{color:#c8323e;}
+  #capHost.ondark .tcap{color:#fff;-webkit-text-stroke:7px #0a0d16;} #capHost.ondark .tcap .tw.now{color:#ff8a9c;}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="__DUR__" data-width="1920" data-height="1080">
+  <div id="paper" class="full clip" data-start="0" data-duration="__DUR__"><svg id="bgsvg" class="full" viewBox="0 0 1920 1080"></svg></div>
+  <div id="night" class="full clip" data-start="0" data-duration="__DUR__"></div>
+  <div id="bgHost" class="full clip" data-start="0" data-duration="__DUR__" data-layout-allow-overflow>
+    <img class="bgimg" id="bg_wall" src="assets/wallst.jpg"><img class="bgimg" id="bg_board" src="assets/idx_board.jpg">
+    <img class="bgimg" id="bg_scbd" src="assets/scbdnight.jpg"><img class="bgimg" id="bg_lobby" src="assets/idx_lobby.jpg">
+  </div>
+  <video id="mapvid" class="full clip" src="assets/indo.mp4" data-start="0" data-duration="__MAPDUR__" muted playsinline></video>
+  <svg id="outline" class="full clip" data-start="0" data-duration="__DUR__" viewBox="0 0 1920 1080"></svg>
+  <svg id="charts" class="full clip" data-start="0" data-duration="__DUR__" viewBox="0 0 1920 1080"></svg>
+
+  <div id="scenes" class="full clip" data-start="0" data-duration="__DUR__" data-layout-allow-overflow>
+    <!-- 1 hook: map, then the trading board -->
+    <div class="scene" id="s_hook">
+      <div class="ttl dark" id="t_hook"><div class="k">Friday, 16 October</div><div class="h"><span class="i">Indonesia's worst day since 1998</span></div></div>
+      <div class="card big" id="cd_board" style="left:380px;top:200px;width:1160px;height:653px"><video id="v_board" class="clip" src="assets/news_idxboard.mp4" data-start="__BOARD__" data-duration="6.3" muted playsinline></video><div class="nt">IDX, Jakarta</div></div>
+      <div class="card big" id="cd_table" style="left:380px;top:200px;width:1160px;height:653px"><video id="v_table" class="clip" src="assets/news_table.mp4" data-start="__TABLE__" data-duration="2.5" muted playsinline></video><div class="nt">Market close</div></div>
+      <div class="stamp" id="st_hook" style="left:96px;top:250px">-11.6% IN ONE DAY</div>
+      <div id="indoLabel" style="position:absolute;font-size:34px;font-weight:800;letter-spacing:0.4em;color:#fff;opacity:0;text-shadow:0 2px 14px #000">INDONESIA</div>
+    </div>
+    <!-- 2 lost -->
+    <div class="scene" id="s_lost">
+      <div class="ttl"><div class="k">Jakarta Composite Index, 2026</div><div class="h"><span class="i">Since January: <span id="n_lost">0</span>%</span></div></div>
+      <div class="card" id="cd_lost" style="left:1500px;top:250px;width:330px;height:210px;transform:rotate(2deg)"><img src="assets/idx_board.jpg"><div class="nt">IDX board</div></div>
+    </div>
+    <!-- 3 blame: dark, Wall Street behind -->
+    <div class="scene" id="s_blame">
+      <div class="ttl dark"><div class="k">The obvious suspect</div><div class="h"><span class="i">MSCI</span></div><div class="s">Its indexes guide trillions<br>of dollars of investment.</div></div>
+      <div class="card" id="cd_wtc" style="left:1180px;top:200px;width:430px;height:580px;transform:rotate(-2deg)"><img src="assets/wtc7.jpg" style="object-position:50% 30%"><div class="nt">7 World Trade Center, NY</div></div>
+      <div class="bk" id="k_blame" style="left:90px;top:440px">Trillions of dollars follow its lists</div>
+    </div>
+    <!-- 4 proposal -->
+    <div class="scene" id="s_prop">
+      <div class="ttl"><div class="k">Under review</div><div class="h"><span class="i">Should Indonesia stay emerging?</span></div></div>
+      <div class="card" id="cd_ny" style="left:1260px;top:230px;width:560px;height:360px;transform:rotate(2deg)"><img src="assets/ny.jpg"><div class="nt">New York</div></div>
+      <div class="doc" id="d_prop" style="left:120px;top:420px;width:1000px"><div class="dk">Our summary of the review</div><div class="dt">MSCI is weighing whether Indonesia keeps its place in the <span class="hl" id="hl_prop">Emerging Markets Index</span>.</div></div>
+    </div>
+    <!-- 5 but -->
+    <div class="scene" id="s_but"><div class="big" style="left:90px;top:380px;font-size:112px;color:#f3f1ec">The price data<br>tells a <span style="color:#ff6b80">longer story.</span></div></div>
+    <!-- 6 bank chart (measured technique) -->
+    <div class="scene" id="s_chart">
+      <div class="ttl"><div class="k">Share price, rebased: 30 Sep 2024 = 100</div><div class="h"><span class="i">The banks sank first</span></div></div>
+      <div class="card" id="pc1" style="left:288px;top:270px;width:220px;height:135px;transform:rotate(-2deg)"><img src="assets/bri.jpg" style="object-position:50% 30%"><div class="nt">BRI</div></div>
+      <div class="card" id="pc2" style="left:540px;top:294px;width:220px;height:135px;transform:rotate(1.5deg)"><img src="assets/bca.jpg" style="object-position:50% 40%"><div class="nt">BCA</div></div>
+      <div class="card" id="pc3" style="left:790px;top:318px;width:220px;height:135px;transform:rotate(-1deg)"><img src="assets/mandiri.jpg"><div class="nt">Mandiri</div></div>
+      <div class="card" id="cd_prab" style="left:1560px;top:190px;width:260px;height:320px;transform:rotate(2deg)"><img src="assets/prabowo.jpg" style="object-position:top"><div class="nt">Prabowo, Oct 2024</div></div>
+      <div class="bk" id="k_bca" style="left:1530px;top:560px">BCA <span id="n_bca">0</span>%</div>
+      <div class="bk" id="k_bmri" style="left:1530px;top:640px">Mandiri <span id="n_bmri">0</span>%</div>
+      <div class="stamp" id="st_year" style="left:600px;top:250px">A YEAR OF SLIDING</div>
+    </div>
+    <!-- 7 who: dark skyline -->
+    <div class="scene" id="s_who"><div class="big" style="left:90px;top:360px;font-size:104px;color:#f3f1ec">Not one bad week.<br><span style="color:#ff6b80;opacity:0" id="leak">A slow leak.</span></div></div>
+    <!-- 8 suspects -->
+    <div class="scene" id="s_sus">
+      <div class="ttl dark"><div class="k">Three forces</div><div class="h"><span class="i">Who did the damage?</span></div></div>
+      <div class="person" id="p1" style="left:170px;top:270px"><div class="card"><img src="assets/wtc7.jpg" style="object-position:50% 25%"><div class="nt">Suspect 1</div></div><div class="nm">Index providers</div><div class="rl2">MSCI, FTSE Russell</div></div>
+      <div class="person" id="p2" style="left:760px;top:270px"><div class="card"><img src="assets/rupiah.jpg"><div class="nt">Suspect 2</div></div><div class="nm">The currency</div><div class="rl2">The rupiah</div></div>
+      <div class="person" id="p3" style="left:1350px;top:270px"><div class="card"><img src="assets/istana.jpg"><div class="nt">Suspect 3</div></div><div class="nm">The government</div><div class="rl2">Istana Merdeka, Jakarta</div></div>
+    </div>
+    <!-- 9 chapter slate -->
+    <div class="scene" id="s_ch1"><div class="slate"><div class="n">01</div><div class="t">Why an index<br>provider matters</div><div class="s">Suspect one: MSCI</div>
+      <div class="card" id="cd_ch1" style="left:1150px;top:250px;width:600px;height:560px;transform:rotate(3deg)"><img src="assets/wtc7.jpg" style="object-position:50% 35%"><div class="nt">MSCI, New York</div></div></div>
+      <div class="wipe" id="wipe1"></div></div>
+    <!-- 10-12 menu / funds / sell -->
+    <div class="scene" id="s_menu">
+      <div class="ttl"><div class="k" id="k_menu">How MSCI sorts markets</div><div class="h"><span class="i" id="h_menu">Every country gets a tier</span></div></div>
+      <div class="menu"><div class="mh">THE MENU</div>
+        <div class="row" id="r1"><div><div class="rl">Developed</div><div class="rs">US, Japan, UK</div></div><div><img src="assets/flag_us.png"><img src="assets/flag_jp.png"><img src="assets/flag_gb.png"></div></div>
+        <div class="row hot" id="r2"><div><div class="rl">Emerging</div><div class="rs">Indonesia, India, Brazil</div></div><div><img src="assets/flag_id.png"><img src="assets/flag_in.png"><img src="assets/flag_br.png"></div></div>
+        <div class="row" id="r3"><div><div class="rl">Frontier</div><div class="rs">Vietnam, Nigeria</div></div><div><img src="assets/flag_vn.png"><img src="assets/flag_ng.png"></div></div>
+      </div>
+      <div class="bk" id="c_size" style="left:90px;top:330px">Size</div>
+      <div class="bk" id="c_open" style="left:90px;top:410px">Openness</div>
+      <div class="bk" id="c_for" style="left:90px;top:490px">Easy for foreigners?</div>
+      <div class="card" id="cd_floor" style="left:120px;top:250px;width:420px;height:260px;transform:rotate(-2deg)"><img src="assets/floor.jpg"><div class="nt">Passive funds</div></div>
+      <div class="box" id="b_funds" style="left:120px;top:560px;width:420px"><div class="bh">Autopilot</div><div class="bs">Buy the list, in the same amounts</div></div>
+      <svg id="flow" style="position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible"><g id="flowdots"></g></svg>
+      <div class="bk" id="c_up" style="left:600px;top:640px">Weight up = they buy</div>
+      <div class="bk" id="c_down" style="left:600px;top:720px">Weight down = they sell</div>
+      <div class="stamp" id="st_sell" style="left:560px;top:820px;font-size:54px">A DOWNGRADE IS A SELL ORDER</div>
+    </div>
+    <!-- 13 freeze -->
+    <div class="scene" id="s_freeze">
+      <div class="ttl"><div class="k">January 2026</div><div class="h"><span class="i">MSCI pauses Indonesia</span></div></div>
+      <div class="doc" id="d_freeze" style="left:110px;top:320px;width:820px"><div class="dk">Our summary</div><div class="dt">No increases to Indonesia's index weight, <span class="hl" id="hl_freeze">paused</span> until further review.</div></div>
+      <div class="card big" id="cd_lobby" style="left:1030px;top:290px;width:780px;height:439px;transform:rotate(1.5deg)"><video id="v_lobby" class="clip" src="assets/news_lobby.mp4" data-start="__LOBBY__" data-duration="2.6" muted playsinline></video><div class="nt">IDX lobby</div></div>
+    </div>
+    <!-- 14 why -->
+    <div class="scene" id="s_why">
+      <div class="ttl"><div class="k">The concern: transparency</div><div class="h"><span class="i">Who really controls the shares?</span></div></div>
+      <div class="card" id="cd_fwd" style="left:1240px;top:220px;width:560px;height:620px;transform:rotate(2deg)"><img src="assets/fwd.jpg" style="object-position:55% 40%"><div class="nt">SCBD, Jakarta</div></div>
+      <div class="owner" id="o1" style="left:150px;top:420px"><b>?</b><div>Owner</div></div>
+      <div class="owner" id="o2" style="left:430px;top:470px"><b>?</b><div>Owner</div></div>
+      <div class="owner" id="o3" style="left:710px;top:420px"><b>?</b><div>Owner</div></div>
+      <div class="owner" id="o4" style="left:430px;top:650px"><b>?</b><div>Owner</div></div>
+    </div>
+    <!-- 15 gorengan -->
+    <div class="scene" id="s_gor">
+      <div class="ttl"><div class="k">Traders' slang</div></div>
+      <div class="big" id="w_gor" style="left:90px;top:320px;font-size:190px;opacity:0;color:var(--ink)">gorengan</div>
+      <div class="stamp" id="st_fried" style="left:110px;top:560px;font-size:44px">= FRIED FOOD</div>
+      <div class="card" id="cd_gor" style="left:1180px;top:240px;width:640px;height:480px;transform:rotate(3deg)"><img src="assets/gorengan.jpg"><div class="nt">Street gorengan</div></div>
+    </div>
+    <!-- 16 pump (illustration) -->
+    <div class="scene" id="s_pump">
+      <div class="ttl"><div class="k">Illustration, not real data</div><div class="h"><span class="i">Thin float: easy to move</span></div></div>
+      <div class="bk" id="c_push" style="left:1300px;top:300px">Push it up</div>
+      <div class="bk" id="c_attract" style="left:1300px;top:380px">Attract buyers</div>
+      <div class="stamp" id="st_dump" style="left:1300px;top:470px">SELL INTO THE RUSH</div>
+    </div>
+    <!-- 17 drop -->
+    <div class="scene" id="s_drop">
+      <div class="ttl"><div class="k">Jakarta Composite, January 2026</div><div class="h"><span class="i">After the freeze: <span id="n_drop">0</span>% in two sessions</span></div></div>
+    </div>
+    <!-- 18 quit: dark lobby -->
+    <div class="scene" id="s_quit">
+      <div class="ttl dark"><div class="k">Soon after</div><div class="h"><span class="i">Two top officials step down</span></div></div>
+      <div class="person" id="q1" style="left:430px;top:260px"><div class="card"><div class="silh">IDX</div><div class="nt">Stock exchange</div></div><div class="nm">Head of the stock exchange</div><div class="rl2">Bursa Efek Indonesia</div></div>
+      <div class="person" id="q2" style="left:1090px;top:260px"><div class="card"><img src="assets/mahendra.jpg" style="object-position:top"><div class="nt">Regulator</div></div><div class="nm">Mahendra Siregar</div><div class="rl2">Chair, OJK</div></div>
+    </div>
+    <!-- 19 fix -->
+    <div class="scene" id="s_fix">
+      <div class="ttl"><div class="k">The new rule</div><div class="h"><span class="i">Minimum public float: <span id="n_fix">0</span>%</span></div></div>
+      <div class="card" id="cd_fix" style="left:1500px;top:230px;width:330px;height:220px;transform:rotate(-2deg)"><img src="assets/idx_lobby.jpg"><div class="nt">IDX rules</div></div>
+      <div class="stamp" id="st_2x" style="left:1500px;top:520px;font-size:60px">2X</div>
+    </div>
+    <!-- 20 end -->
+    <div class="scene" id="s_end">
+      <div class="ttl"><div class="k">Rupiah per US dollar</div><div class="h"><span class="i">Next: the currency</span></div></div>
+      <div class="card" id="cd_rp" style="left:1500px;top:230px;width:330px;height:220px;transform:rotate(2deg)"><img src="assets/rupiah.jpg"><div class="nt">Rupiah notes</div></div>
+    </div>
+    <div class="scene" id="s_slate2"><div class="slate"><div class="n">02</div><div class="t">The currency</div><div class="s">Suspect two: the rupiah</div></div><div class="wipe" id="wipe2"></div></div>
+
+    <div id="brand"><div class="b1">YOUR CHANNEL</div><div class="b2">Market analysis</div></div>
+    <div id="src"></div>
+  </div>
+  <div id="capHost" class="clip" data-start="0" data-duration="__DUR__" data-layout-allow-overflow></div>
+
+  <audio id="voice" class="clip" src="assets/voice.wav" data-start="0" data-duration="__VDUR__" data-volume="1.0"></audio>
+  <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="__MDUR__" data-volume="0.12" data-fade-out="2.5"></audio>
+  <!--SFX-->
+</div>
+<script>
+const el = (id) => document.getElementById(id), R = FC.ramp, NS = "http://www.w3.org/2000/svg";
+TSCS.init();
+const T = window.__TIMING.segments, seg = (id) => T.find((s) => s.id === id);
+const S = (id) => seg(id).start, E = (id) => { const i = T.findIndex((s) => s.id === id); return i < T.length - 1 ? T[i + 1].start : window.__TIMING.duration; };
+const W = (id, w) => TSCS.cue(id, w);
+const DUR = window.__TIMING.duration + 2.5;
+const win = (t, a, b, f) => R(t, a, a + (f || 0.45)) * (1 - R(t, b - (f || 0.45), b));
+const back = (x) => { const c = 1.6; return x <= 0 ? 0 : x >= 1 ? 1 : 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+TSCS.topo(el("bgsvg"), { seed: 5, levels: 34, scale: 1600, octaves: 3, stroke: "#c6c2bd", width: 2.6 });
+
+/* ---- motion helpers: every visual moves ---- */
+// scene: slides in 40 px from the right with a fade, slides out to the left
+function scene(id, t, a, b) { const i = R(t, a, a + 0.5), o = R(t, b - 0.4, b);
+  el(id).style.opacity = (i * (1 - o)).toFixed(3);
+  el(id).style.transform = `translateX(${((1 - i) * 40 - o * 40).toFixed(1)}px)`; }
+// card: pops up with a small overshoot, then its photo slowly pushes in (Ken Burns)
+function card(id, t, on, off) { const e = el(id), p = R(t, on, on + 0.5), q = back(Math.min(1, Math.max(0, (t - on) / 0.55)));
+  const o = off == null ? 0 : R(t, off - 0.3, off);
+  e.style.opacity = (p * (1 - o)).toFixed(3);
+  const rot = e.dataset.rot || (e.dataset.rot = (/rotate\(([-0-9.]+)deg\)/.exec(e.getAttribute("style") || "") || [0, 0])[1]);
+  e.style.transform = `rotate(${rot}deg) translateY(${((1 - q) * 40).toFixed(1)}px) scale(${(0.9 + 0.1 * q).toFixed(4)})`;
+  const m = e.querySelector("img,video"); if (m) { const k = Math.max(0, Math.min(1, (t - on) / 8));
+    m.style.transform = `scale(${(1.02 + 0.08 * k).toFixed(4)}) translate(${(-1.2 * k).toFixed(2)}%,${(-0.8 * k).toFixed(2)}%)`; } }
+// black note: slides in from the left edge of its own box
+function bk(id, t, on, off) { const p = back(Math.min(1, Math.max(0, (t - on) / 0.4))), o = off == null ? 0 : R(t, off - 0.25, off);
+  el(id).style.opacity = (R(t, on, on + 0.2) * (1 - o)).toFixed(3); el(id).style.transform = `translateX(${((1 - p) * -30).toFixed(1)}px)`; }
+// stamp: lands from big to normal with a tilt
+function stamp(id, t, on, off) { const p = R(t, on, on + 0.22), o = off == null ? 0 : R(t, off - 0.25, off);
+  el(id).style.opacity = (p * (1 - o)).toFixed(3); el(id).style.transform = `rotate(-2deg) scale(${(1.3 - 0.3 * p).toFixed(3)})`; }
+// title: kicker fades, headline rises out of a mask
+function title(sc, t, on) { const box = el(sc).querySelector(".ttl"); if (!box) return;
+  const k = box.querySelector(".k"), h = box.querySelector(".h .i"), s = box.querySelector(".s");
+  if (k) { k.style.opacity = R(t, on, on + 0.35).toFixed(3); }
+  if (h) { const p = back(Math.min(1, Math.max(0, (t - on - 0.12) / 0.55))); h.style.transform = `translateY(${((1 - p) * 70).toFixed(1)}px)`; }
+  if (s) s.style.opacity = R(t, on + 0.5, on + 0.9).toFixed(3); }
+// count a number up (signed, one decimal)
+function count(id, t, a, b, to, dec) { const v = to * R(t, a, b); el(id).textContent = (v > 0 ? "+" : v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(dec == null ? 1 : dec); }
+// background photo: fades, slow push + drift
+function bg(id, t, a, b, dim) { const e = el(id), v = win(t, a, b, 0.5), k = Math.max(0, Math.min(1, (t - a) / Math.max(1, b - a)));
+  e.style.opacity = (v * (dim || 0.4)).toFixed(3); e.style.transform = `scale(${(1.04 + 0.08 * k).toFixed(4)}) translateX(${(-1.5 * k).toFixed(2)}%)`; }
+
+/* ---- map outline (line around every island) ---- */
+const TR = window.__INDO_TRACK, AT = TR.areas[0], rings = [];
+const og = document.createElementNS(NS, "g"), lg = document.createElementNS(NS, "g"); el("outline").appendChild(og); el("outline").appendChild(lg);
+AT.rings.forEach(() => { const a = document.createElementNS(NS, "path"), b = document.createElementNS(NS, "path");
+  [[a, "rgba(255,255,255,0.35)", 9], [b, "#fff", 2.4]].forEach(([p, c, w]) => { p.setAttribute("fill", "none"); p.setAttribute("stroke", c);
+    p.setAttribute("stroke-width", w); p.setAttribute("stroke-linejoin", "round"); p.setAttribute("pathLength", "1"); p.setAttribute("stroke-dasharray", "1 1"); });
+  og.appendChild(a); lg.appendChild(b); rings.push([a, b]); });
+const MAP_END = W("hook", "By") - 0.1;
+function drawOutline(t) { const f = Math.max(0, Math.min(AT.xy.length - 1, Math.round(t * TR.fps))), xy = AT.xy[f];
+  const p = R(t, 0.6, MAP_END - 1.2); let o = 0, cx = 0, n = 0, minY = 1e9;
+  AT.rings.forEach((cnt, k) => { let d = ""; for (let i = 0; i < cnt; i++) { const X = xy[(o + i) * 2], Y = xy[(o + i) * 2 + 1];
+      d += (i ? "L" : "M") + X + " " + Y; if (cnt > 150) { cx += X; n++; minY = Math.min(minY, Y); } } d += "Z"; o += cnt;
+    rings[k].forEach((q) => { q.setAttribute("d", d); q.setAttribute("stroke-dashoffset", (1 - p).toFixed(4)); });
+    rings[k][0].setAttribute("fill", "rgba(255,255,255," + (0.08 * R(t, MAP_END - 1.6, MAP_END - 0.9)).toFixed(3) + ")"); });
+  const lab = el("indoLabel"); if (n) { lab.style.left = (cx / n - 150) + "px"; lab.style.top = (minY + 320) + "px"; }
+  lab.style.opacity = (R(t, MAP_END - 1.4, MAP_END - 0.9) * (1 - R(t, MAP_END - 0.3, MAP_END))).toFixed(3); }
+
+/* ---- charts from real data ---- */
+const D = window.__DATA, svg = el("charts"), G = {};
+["lost", "bank", "pump", "drop", "fix", "end"].forEach((k) => { G[k] = document.createElementNS(NS, "g"); G[k].setAttribute("opacity", 0); svg.appendChild(G[k]); });
+const TH = { bg: "#e9e8e6", grid: "#d3cfca", sub: "#4a4744", xInk: "#3a3835", accent: "#8b1a2b", font: "Pop, sans-serif" };
+const pct = (v) => (v - 100 > 0 ? "+" : "\u2212") + Math.abs(Math.round(v - 100)) + "%";
+const bank = (id) => D.banks_d.series.find((s) => s.id === id), jci = D.jci_ytd.series[0];
+const cLost = FC.area({ svg: G.lost, x: 205, y: 300, w: 1200, h: 520, start: W("lost", "January"), end: W("lost", "forty") + 0.2, theme: TH,
+  axisSize: 26, curve: "linear", marker: "ring", labelSize: 30, labelAtEnd: true, yTicks: 4, xTicks: 6, xFormat: d3.timeFormat("%b"), yFormat: (v) => FC.num(v),
+  series: [{ label: "", color: "#8b1a2b", width: 5, points: jci.points, valueLabel: (v) => FC.num(v) }] });
+const tB = W("chart", "banks");
+const cBank = FC.line({ svg: G.bank, x: 205, y: 290, w: 1015, h: 470, pad: 0, yDomain: [40, 130], yTickValues: [40, 60, 80, 100, 120],
+  yFormat: (v) => v, axisSize: 30, yLabelGap: 22, baseline: true, baselineDy: 34, xLabelDy: 72, curve: "linear", marker: "ring",
+  labelSize: 28, labelDx: 18, labelAtEnd: true, labelGap: 46, theme: TH, start: tB, end: W("chart", "half") + 0.2,
+  xTickValues: [["2024-10-07", "Oct 2024"], ["2025-04-01", "Apr 2025"], ["2025-10-01", "Oct 2025"], ["2026-04-01", "Apr 2026"], ["2026-10-01", "Oct 2026"]],
+  annotations: [{ date: "2024-10-21", label: "Prabowo takes office", color: "#8b1a2b", side: "bottom" }],
+  series: [{ label: "BRI", color: "#c9bfb3", width: 3, points: D.bri_d.series[0].points, valueLabel: pct },
+           { label: "Index", color: "#8c8782", width: 3.5, points: bank("^JKSE").points, valueLabel: pct, start: W("chart", "index") - 0.3, end: W("chart", "index") + 1.6 },
+           { label: "BCA", color: "#141414", width: 3.5, points: bank("BBCA.JK").points, valueLabel: pct },
+           { label: "Mandiri", color: "#8b1a2b", width: 6, points: bank("BMRI.JK").points, valueLabel: pct }] });
+const pumpPts = []; { let v = 100; const d0 = new Date("2025-01-01");
+  for (let i = 0; i < 60; i++) { if (i < 25) v += 0.6; else if (i < 42) v += 5.5 + (i - 25) * 0.4; else if (i < 47) v -= 40; else v -= 1.2;
+    v = Math.max(v, 92); pumpPts.push([new Date(d0.getTime() + i * 864e5).toISOString().slice(0, 10), v]); } }
+const cPump = FC.line({ svg: G.pump, x: 205, y: 300, w: 1000, h: 520, start: W("pump", "slice"), end: W("pump", "rush"), yTicks: 3, endLabels: false,
+  theme: TH, axisSize: 26, yFormat: () => "", xTickValues: [], series: [{ label: "", color: "#8b1a2b", width: 6, points: pumpPts }] });
+const janPts = jci.points.filter((p) => p[0] >= "2026-01-14" && p[0] <= "2026-02-06");
+const cDrop = FC.line({ svg: G.drop, x: 205, y: 300, w: 1400, h: 520, start: W("drop", "freeze"), end: W("drop", "two"), yTicks: 4, theme: TH,
+  axisSize: 26, curve: "linear", marker: "ring", labelSize: 30, labelAtEnd: true, xTickValues: [["2026-01-15", "15 Jan"], ["2026-01-22", "22 Jan"], ["2026-01-29", "29 Jan"], ["2026-02-05", "5 Feb"]],
+  yFormat: (v) => FC.num(v), series: [{ label: "", color: "#8b1a2b", width: 5, points: janPts, valueLabel: (v) => FC.num(v) }],
+  annotations: [{ date: "2026-01-28", label: "MSCI freeze news", color: "#1c1c1c", side: "top" }] });
+const cFix = FC.bars({ svg: G.fix, x: 300, y: 300, w: 1050, h: 520, start: W("fix", "fifteen") - 1.6, stagger: 1.6, span: 0.9, theme: TH,
+  format: (v) => v.toFixed(1) + "%", items: [{ label: "Old minimum", value: 7.5, color: "#9c968b" }, { label: "New minimum", value: 15, color: "#8b1a2b" }] });
+const cEnd = FC.area({ svg: G.end, x: 205, y: 300, w: 1200, h: 520, start: W("end", "question"), end: W("end", "currency"), theme: TH, axisSize: 26,
+  curve: "linear", marker: "ring", labelSize: 30, labelAtEnd: true, yTicks: 4, xTicks: 5, yFormat: (v) => FC.num(v),
+  series: [{ label: "", color: "#8b1a2b", width: 5, points: D.rupiah.series[0].points, valueLabel: (v) => FC.num(v) }] });
+
+/* ---- passive-fund flow: dots run from the menu to the funds box ---- */
+const FD = []; for (let i = 0; i < 14; i++) { const c = document.createElementNS(NS, "circle"); c.setAttribute("r", 7); c.setAttribute("fill", "#8b1a2b"); el("flowdots").appendChild(c); FD.push(c); }
+function flow(t, on, reverse) { const vis = R(t, on, on + 0.4); FD.forEach((c, i) => { let u = ((t - on) * 0.45 + i / FD.length) % 1; if (reverse) u = 1 - u;
+  const x = 1010 - u * 460, y = 470 + Math.sin(u * Math.PI) * -60; c.setAttribute("cx", x.toFixed(1)); c.setAttribute("cy", y.toFixed(1));
+  c.setAttribute("opacity", (vis * Math.sin(u * Math.PI)).toFixed(3)); }); }
+
+/* ---- source line per moment (from credits.js where it exists) ---- */
+const C = window.__CREDITS || {};
+const SRC = [[0, MAP_END, "Map: Esri World Imagery, Natural Earth"], [MAP_END, S("lost"), "Footage: Reuters, Bloomberg Television"],
+  [S("lost"), S("blame"), "Data: Yahoo Finance (^JKSE)"], [S("blame"), S("proposal"), (C.wtc7 || "") + ".  " + (C.wallst || "")],
+  [S("proposal"), S("butbanks"), "Summary of MSCI's market classification review. " + (C.ny || "")], [S("butbanks"), S("chart"), "Footage still: Reuters"],
+  [S("chart"), S("who"), "Data: Yahoo Finance. Photos: Wikimedia Commons (BRI, BCA, Mandiri, Indonesian State Secretariat)"],
+  [S("who"), S("suspects"), C.scbdnight || ""], [S("suspects"), S("ch1"), "Photos: Wikimedia Commons"], [S("ch1"), S("menu"), C.wtc7 || ""],
+  [S("menu"), S("freeze"), "Source: MSCI market classification framework. " + (C.floor || "") + ". Flags: flagcdn.com"],
+  [S("freeze"), S("why"), "Footage: CNA"], [S("why"), S("gorengan"), C.fwd || ""], [S("gorengan"), S("pump"), C.gorengan || ""],
+  [S("pump"), S("drop"), "Illustration"], [S("drop"), S("quit"), "Data: Yahoo Finance (^JKSE)"], [S("quit"), S("fix"), (C.mahendra || "") + ". Footage still: CNA"],
+  [S("fix"), S("end"), "Source: Indonesia Stock Exchange listing rules. Footage still: CNA"], [S("end"), DUR, "Data: Yahoo Finance (IDR=X). " + (C.rupiah || "")]];
+
+function renderAt(t) {
+  const dark = Math.max(win(t, -1, MAP_END + 0.3, 0.4), win(t, S("lost") - 0.4, S("lost"), 0.01) * 0, win(t, S("blame") - 0.1, S("proposal"), 0.4),
+    win(t, S("butbanks") - 0.1, S("chart"), 0.4), win(t, S("who") - 0.1, S("ch1") + 0.2, 0.4), win(t, S("quit") - 0.1, S("fix"), 0.4),
+    win(t, MAP_END, S("lost"), 0.4));
+  el("night").style.opacity = dark.toFixed(3);
+  bg("bg_wall", t, S("blame") - 0.1, S("proposal"), 0.35); bg("bg_board", t, S("butbanks") - 0.1, S("chart"), 0.24);
+  bg("bg_scbd", t, S("who") - 0.1, S("ch1"), 0.55); bg("bg_lobby", t, S("quit") - 0.1, S("fix"), 0.4);
+  el("mapvid").style.opacity = win(t, -1, MAP_END + 0.2, 0.5).toFixed(3); el("outline").style.opacity = win(t, -1, MAP_END, 0.4).toFixed(3);
+  if (t < MAP_END + 0.5) drawOutline(t);
+  const onBlack = dark > 0.5 || (t > S("ch1") && t < S("menu")) || t > W("end", "currency") + 0.8;
+  el("brand").classList.toggle("on", onBlack); el("src").classList.toggle("on", onBlack); el("capHost").classList.toggle("ondark", onBlack);
+
+  // 1 hook
+  scene("s_hook", t, -1, S("lost")); title("s_hook", t, 1.0);
+  card("cd_board", t, MAP_END, W("hook", "has") + 0.2); card("cd_table", t, W("hook", "has"), S("lost") - 0.1);
+  stamp("st_hook", t, W("hook", "twelve"), S("lost"));
+  // 2 lost
+  scene("s_lost", t, S("lost") - 0.2, S("blame")); title("s_lost", t, S("lost")); G.lost.setAttribute("opacity", win(t, S("lost") - 0.2, S("blame")).toFixed(3));
+  cLost.draw(t); count("n_lost", t, W("lost", "January"), W("lost", "forty") + 0.2, -41.5); card("cd_lost", t, W("lost", "index"), S("blame"));
+  // 3 blame
+  scene("s_blame", t, S("blame") - 0.2, S("proposal")); title("s_blame", t, W("blame", "MSCI") - 0.2);
+  card("cd_wtc", t, W("blame", "MSCI"), S("proposal")); bk("k_blame", t, W("blame", "trillions"), S("proposal"));
+  // 4 proposal
+  scene("s_prop", t, S("proposal") - 0.2, S("butbanks")); title("s_prop", t, S("proposal"));
+  card("cd_ny", t, S("proposal") + 0.3, S("butbanks")); card("d_prop", t, W("proposal", "weighing"), S("butbanks"));
+  el("hl_prop").style.setProperty("--p", (R(t, W("proposal", "emerging"), W("proposal", "index") + 0.3) * 100).toFixed(1) + "%");
+  // 5 but
+  scene("s_but", t, S("butbanks") - 0.2, S("chart"));
+  // 6 chart
+  scene("s_chart", t, S("chart") - 0.2, S("who")); title("s_chart", t, S("chart")); G.bank.setAttribute("opacity", win(t, S("chart") - 0.2, S("who")).toFixed(3)); cBank.draw(t);
+  card("pc1", t, tB, W("chart", "Prabowo") - 0.1); card("pc2", t, tB + 0.4, W("chart", "Prabowo") - 0.05); card("pc3", t, tB + 0.8, W("chart", "Prabowo"));
+  card("cd_prab", t, W("chart", "Prabowo"), S("who"));
+  bk("k_bca", t, W("chart", "BCA"), S("who")); count("n_bca", t, W("chart", "BCA"), W("chart", "half"), bank("BBCA.JK").change_pct, 0);
+  bk("k_bmri", t, W("chart", "Mandiri"), S("who")); count("n_bmri", t, W("chart", "Mandiri"), W("chart", "third"), bank("BMRI.JK").change_pct, 0);
+  stamp("st_year", t, W("chart", "sank"), S("who"));
+  // 7 who
+  scene("s_who", t, S("who") - 0.2, S("suspects")); el("leak").style.opacity = R(t, W("who", "slow") - 0.1, W("who", "slow") + 0.3).toFixed(3);
+  el("s_who").style.transform = (t > W("who", "burst") && t < W("who", "burst") + 0.25) ? `translate(${(Math.sin(t * 90) * 8).toFixed(1)}px,${(Math.cos(t * 70) * 5).toFixed(1)}px)` : el("s_who").style.transform;
+  // 8 suspects
+  scene("s_sus", t, S("suspects") - 0.2, S("ch1")); title("s_sus", t, S("suspects"));
+  card("p1", t, W("suspects", "index"), S("ch1")); card("p2", t, W("suspects", "currency"), S("ch1")); card("p3", t, W("suspects", "government"), S("ch1"));
+  // 9 chapter slate + red wipe
+  scene("s_ch1", t, S("ch1") - 0.35, S("menu") - 0.1); card("cd_ch1", t, S("ch1") + 0.4, S("menu"));
+  el("wipe1").style.transform = `translateX(${(R(t, S("ch1") - 0.45, S("ch1") + 0.25) * 2800).toFixed(0)}px) rotate(14deg)`;
+  // 10-12 menu / funds / sell
+  scene("s_menu", t, S("menu") - 0.2, S("freeze"));
+  title("s_menu", t, t < S("funds") ? S("menu") : t < S("kicked") ? S("funds") : S("kicked"));
+  el("k_menu").textContent = t < S("funds") ? "How MSCI sorts markets" : t < S("kicked") ? "Then come passive funds" : "Off the menu";
+  el("h_menu").textContent = t < S("funds") ? "Every country gets a tier" : t < S("kicked") ? "They copy the menu" : "Downgraded, then sold";
+  TSCS.stage([el("r1"), el("r2"), el("r3")], t, W("menu", "developed") - 0.1, W("menu", "emerging") - W("menu", "developed"), 0.35);
+  bk("c_size", t, W("menu", "size"), S("funds")); bk("c_open", t, W("menu", "openness"), S("funds")); bk("c_for", t, W("menu", "foreigners"), S("funds"));
+  card("cd_floor", t, W("funds", "Passive"), S("freeze")); el("b_funds").style.opacity = win(t, W("funds", "copy"), S("freeze")).toFixed(3);
+  flow(t, W("funds", "automatically"), t > W("funds", "down")); el("flowdots").style.opacity = (1 - R(t, S("kicked") + 2.5, S("kicked") + 3)).toFixed(3);
+  bk("c_up", t, W("funds", "buy"), S("freeze")); bk("c_down", t, W("funds", "sell"), S("freeze")); stamp("st_sell", t, W("kicked", "sell"), S("freeze"));
+  // 13 freeze
+  scene("s_freeze", t, S("freeze") - 0.2, S("why")); title("s_freeze", t, S("freeze"));
+  card("d_freeze", t, W("freeze", "MSCI"), S("why")); card("cd_lobby", t, W("freeze", "paused") - 0.4, S("why"));
+  el("hl_freeze").style.setProperty("--p", (R(t, W("freeze", "paused"), W("freeze", "paused") + 0.7) * 100).toFixed(1) + "%");
+  // 14 why
+  scene("s_why", t, S("why") - 0.2, S("gorengan")); title("s_why", t, S("why")); card("cd_fwd", t, W("why", "listed"), S("gorengan"));
+  TSCS.stage([el("o1"), el("o2"), el("o3"), el("o4")], t, W("why", "who") - 0.2, 0.3, 0.35);
+  // 15 gorengan
+  scene("s_gor", t, S("gorengan") - 0.2, S("pump")); title("s_gor", t, S("gorengan")); card("cd_gor", t, W("gorengan", "traders"), S("pump"));
+  el("w_gor").style.opacity = R(t, W("gorengan", "Gorengan") - 0.05, W("gorengan", "Gorengan") + 0.25).toFixed(3);
+  el("w_gor").style.transform = `scale(${(0.86 + 0.14 * back(Math.min(1, Math.max(0, (t - W("gorengan", "Gorengan")) / 0.45)))).toFixed(3)})`;
+  stamp("st_fried", t, W("gorengan", "Fried"), S("pump"));
+  // 16 pump
+  scene("s_pump", t, S("pump") - 0.2, S("drop")); title("s_pump", t, S("pump")); G.pump.setAttribute("opacity", win(t, S("pump") - 0.2, S("drop")).toFixed(3)); cPump.draw(t);
+  bk("c_push", t, W("pump", "Push"), S("drop")); bk("c_attract", t, W("pump", "attract"), S("drop")); stamp("st_dump", t, W("pump", "sell"), S("drop"));
+  // 17 drop
+  scene("s_drop", t, S("drop") - 0.2, S("quit")); title("s_drop", t, S("drop")); G.drop.setAttribute("opacity", win(t, S("drop") - 0.2, S("quit")).toFixed(3)); cDrop.draw(t);
+  count("n_drop", t, W("drop", "freeze"), W("drop", "two"), -8.3);
+  // 18 quit
+  scene("s_quit", t, S("quit") - 0.2, S("fix")); title("s_quit", t, S("quit"));
+  card("q1", t, W("quit", "exchange") - 0.3, S("fix")); card("q2", t, W("quit", "regulator") - 0.3, S("fix"));
+  // 19 fix
+  scene("s_fix", t, S("fix") - 0.2, S("end")); title("s_fix", t, S("fix")); G.fix.setAttribute("opacity", win(t, S("fix") - 0.2, S("end")).toFixed(3)); cFix.draw(t);
+  count("n_fix", t, W("fix", "fifteen") - 0.2, W("fix", "percent"), 15, 0); el("n_fix").textContent = el("n_fix").textContent.replace("+", "");
+  card("cd_fix", t, W("fix", "Listed"), S("end")); stamp("st_2x", t, W("fix", "twice"), S("end"));
+  // 20 end + next slate
+  scene("s_end", t, S("end") - 0.2, W("end", "currency") + 0.9); title("s_end", t, S("end"));
+  G.end.setAttribute("opacity", win(t, S("end") - 0.2, W("end", "currency") + 0.9).toFixed(3)); cEnd.draw(t); card("cd_rp", t, W("end", "time"), W("end", "currency") + 0.9);
+  scene("s_slate2", t, W("end", "currency") + 0.6, DUR + 5);
+  el("wipe2").style.transform = `translateX(${(R(t, W("end", "currency") + 0.5, W("end", "currency") + 1.2) * 2800).toFixed(0)}px) rotate(14deg)`;
+
+  const s = SRC.find(([a, b]) => t >= a && t < b); el("src").textContent = s ? s[2] : "";
+}
+const renderCaps = TSCS.captions(el("capHost"), T);
+window.addEventListener("hf-seek", (e) => { renderAt(e.detail.time); renderCaps(e.detail.time); });
+renderAt(0);
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true }); tl.to({}, { duration: DUR }, 0); window.__timelines["main"] = tl;
+</script>
+</body>
+</html>
