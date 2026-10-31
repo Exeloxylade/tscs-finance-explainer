@@ -1,122 +1,197 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=1920, height=1080" />
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="lib/d3.min.js"></script>
 <script src="lib/tscs.js"></script>
+<script src="lib/fchart.js"></script>
+<script src="assets/banks.js"></script>
+<script src="assets/bri.js"></script>
+<script src="assets/rupiah.js"></script>
+<script src="assets/indo-track-win.js"></script>
 <style>
-  :root{--bg:#f3f1ec;--ink:#141414;--sub:#6b6b6b;--red:#8d1b2d;--redText:#a8203a;--grid:#ddd8cf;--font:"Inter","Segoe UI",Arial,sans-serif;}
+  :root{--bg:#f3f1ec;--ink:#141414;--sub:#6b6b6b;--red:#8d1b2d;--redText:#a8203a;--font:"Inter","Segoe UI",Arial,sans-serif;}
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:1920px;height:1080px;overflow:hidden;background:#000;}
-  #root{position:relative;width:1920px;height:1080px;font-family:var(--font);color:var(--ink);background:var(--bg);}
-  #bg{position:absolute;inset:0;z-index:0;background:var(--bg);}#bg svg{width:1920px;height:1080px;}
-  #brand{position:absolute;right:54px;top:40px;z-index:9;text-align:right;}
-  #brand .b1{font-size:30px;font-weight:800;letter-spacing:0.18em;}#brand .b2{font-size:15px;letter-spacing:0.14em;color:var(--sub);}
-  .src{position:absolute;z-index:9;font-size:16px;font-weight:600;color:#fff;background:rgba(20,20,20,0.72);padding:6px 12px;border-radius:3px;letter-spacing:0.02em;}
-  .ttl{position:absolute;left:96px;top:70px;z-index:8;}
+  #root{position:relative;width:1920px;height:1080px;font-family:var(--font);color:var(--ink);background:var(--bg);overflow:hidden;}
+  .full{position:absolute;left:0;top:0;width:1920px;height:1080px;}
+  #paper{z-index:0;background:var(--bg);}
+  #night{z-index:1;background:#0b0e14;opacity:0;}
+  #mapvid{z-index:2;object-fit:cover;filter:brightness(0.55) saturate(0.85);opacity:0;}
+  #outline{z-index:3;opacity:0;}
+  .vid{position:absolute;z-index:5;object-fit:cover;border:4px solid var(--red);box-shadow:0 24px 70px rgba(0,0,0,0.55);opacity:0;}
+  #prab{position:absolute;z-index:5;left:1180px;top:170px;width:520px;height:690px;object-fit:cover;object-position:top;border:4px solid var(--red);box-shadow:0 24px 70px rgba(0,0,0,0.35);opacity:0;}
+  #charts{z-index:4;}
+  .ttl{position:absolute;left:96px;top:74px;z-index:8;opacity:0;max-width:1200px;}
   .ttl .k{font-size:22px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--redText);}
-  .ttl .h{font-size:58px;font-weight:800;margin-top:8px;}.ttl .h .r{color:var(--redText);}
-  .ttl.ondark .h{color:#f3f1ec;}
-  /* SCENE A: real map */
-  #mapwrap{position:absolute;inset:0;z-index:1;opacity:0;}
-  #mapvid{width:1920px;height:1080px;object-fit:cover;filter:brightness(0.62) saturate(0.9);}
-  .dot{position:absolute;z-index:3;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#ff3b55;border:3px solid #fff;box-shadow:0 0 0 6px rgba(255,59,85,0.35),0 0 28px rgba(255,59,85,1);opacity:0;}
-  /* SCENE B: real document */
-  #docscene{position:absolute;inset:0;z-index:4;background:var(--bg);opacity:0;overflow:hidden;}
-  #docview{position:absolute;left:460px;top:230px;width:1000px;height:740px;border:3px solid var(--red);overflow:hidden;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-  #docwrap{position:absolute;left:0;top:0;width:3840px;}
-  #docwrap img{width:3840px;display:block;}
-  #hl{position:absolute;background:rgba(141,27,45,0.32);border-bottom:4px solid var(--red);z-index:2;transform:scaleX(0);}
-  /* SCENE C: real footage */
-  #footscene{position:absolute;inset:0;z-index:5;background:#0b0e14;opacity:0;}
-  #footcard{position:absolute;left:360px;top:200px;width:1200px;height:680px;border:3px solid var(--red);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
-  #footcard video{width:100%;height:100%;object-fit:cover;}
-  #footcap{position:absolute;left:0;bottom:0;background:var(--red);color:#fff;font-size:18px;font-weight:700;padding:7px 16px;letter-spacing:0.05em;text-transform:uppercase;}
+  .ttl .h{font-size:58px;font-weight:800;line-height:1.04;margin-top:8px;}
+  .ttl .h .r{color:var(--redText);}
+  .ttl .s{font-size:26px;color:var(--sub);margin-top:14px;line-height:1.35;}
+  .ttl.dark .h{color:#f3f1ec;} .ttl.dark .s{color:#c9c4ba;} .ttl.dark .k{color:#ff5a72;}
+  .chip{position:absolute;z-index:8;padding:10px 18px;font-size:28px;font-weight:800;color:#fff;background:var(--red);border-radius:4px;opacity:0;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+  #indoLabel{position:absolute;z-index:6;font-size:30px;font-weight:800;letter-spacing:0.35em;color:#fff;opacity:0;text-shadow:0 2px 12px rgba(0,0,0,0.9);}
+  #brand{position:absolute;right:54px;top:40px;z-index:9;text-align:right;}
+  #brand .b1{font-size:30px;font-weight:800;letter-spacing:0.18em;} #brand .b2{font-size:15px;letter-spacing:0.14em;color:var(--sub);}
+  #src{position:absolute;left:54px;bottom:36px;z-index:9;font-size:20px;font-weight:600;color:#fff;background:rgba(20,20,20,0.75);padding:7px 14px;border-radius:3px;}
 </style>
 </head>
 <body>
-  <div id="root" data-composition-id="main" data-start="0" data-duration="24.0" data-width="1920" data-height="1080">
-    <div id="bg" class="clip" data-start="0" data-duration="24.0"><svg id="bgsvg"></svg></div>
-    <div id="brand" class="clip" data-start="0" data-duration="24.0"><div class="b1">TSCS</div><div class="b2">TSCS Analysis</div></div>
+<div id="root" data-composition-id="main" data-start="0" data-duration="52" data-width="1920" data-height="1080">
+  <div id="paper" class="full clip" data-start="0" data-duration="52"></div>
+  <div id="night" class="full clip" data-start="0" data-duration="52"></div>
 
-    <!-- SCENE A: REAL baked satellite map (0-8s) -->
-    <div id="mapwrap" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
-      <video id="mapvid" class="clip" src="assets/indo.mp4" data-start="0" data-duration="16" muted playsinline></video>
-    </div>
-    <div id="dots" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow style="position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:3"></div>
-    <div class="ttl ondark" id="ttlA" style="opacity:0"><div class="k">Jakarta / market report</div><div class="h">Indonesia's <span class="r">worst day</span> since 1998.</div></div>
-    <div class="src" id="srcA" style="left:54px;bottom:34px;opacity:0">Map: Esri World Imagery / OpenStreetMap</div>
+  <video id="mapvid" class="full clip" src="assets/indo.mp4" data-start="0" data-duration="12" muted playsinline></video>
+  <svg id="outline" class="full clip" data-start="0" data-duration="52" viewBox="0 0 1920 1080"></svg>
+  <div id="indoHost" class="full clip" data-start="0" data-duration="52" data-layout-allow-overflow><div id="indoLabel">INDONESIA</div></div>
 
-    <!-- SCENE B: REAL document, camera zooms to a boxed line (8-16s) -->
-    <div id="docscene" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
-      <div id="docview"><div id="docwrap"><img src="assets/msci_doc.png"><div id="hl"></div></div></div>
-    </div>
-    <div class="ttl" id="ttlB" style="opacity:0"><div class="k">The source, on screen</div><div class="h">MSCI writes <span class="r">the index.</span></div></div>
-    <div class="src" id="srcB" style="left:54px;bottom:34px;opacity:0">Source: Wikipedia, "MSCI" (en.wikipedia.org/wiki/MSCI)</div>
+  <video id="v_board" class="vid clip" src="assets/news_idxboard.mp4" data-start="11" data-duration="6.2" muted playsinline style="left:300px;top:200px;width:1320px;height:742px"></video>
+  <video id="v_lobby" class="vid clip" src="assets/news_lobby.mp4" data-start="16.6" data-duration="2.6" muted playsinline style="left:300px;top:200px;width:1320px;height:742px"></video>
 
-    <!-- SCENE C: REAL footage card (16-24s) -->
-    <div id="footscene" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
-      <div id="footcard"><video id="footvid" class="clip" src="assets/floor.mp4" data-start="16" data-duration="8" muted playsinline></video><div id="footcap">Nederlands Instituut voor Beeld en Geluid / Wikimedia, CC BY-SA 3.0</div></div>
-    </div>
-    <div class="ttl ondark" id="ttlC" style="opacity:0"><div class="k">Real footage</div><div class="h">Pulled from the <span class="r">source.</span></div></div>
-    <div class="src" id="srcC" style="left:54px;bottom:34px;opacity:0">Footage: Wikimedia Commons (credit per clip)</div>
+  <svg id="charts" class="full clip" data-start="0" data-duration="52" viewBox="0 0 1920 1080"></svg>
+  <img id="prab" class="clip" data-start="0" data-duration="52" src="assets/prabowo.jpg" alt="">
 
+  <div id="txtHost" class="full clip" data-start="0" data-duration="52" data-layout-allow-overflow>
+    <div class="ttl dark" id="t_map"><div class="k">Jakarta / market report</div><div class="h">Indonesia's <span class="r">worst day</span><br>since 1998.</div></div>
+    <div class="chip" id="c_map" style="left:96px;top:300px">-11.6% IN ONE DAY</div>
+    <div class="ttl dark" id="t_news"><div class="k">On the trading floor</div><div class="h">Screens turn <span class="r">red.</span></div></div>
+    <div class="ttl" id="t_line"><div class="k">Since Sept 2024, rebased to 100</div><div class="h">The banks fell <span class="r">with</span> the market.</div></div>
+    <div class="ttl" id="t_prab"><div class="k">October 2024</div><div class="h">Prabowo takes<br><span class="r">office.</span></div><div class="s">The slide in bank shares<br>starts the same month.</div></div>
+    <div class="ttl" id="t_bars"><div class="k">Change since 30 Sept 2024</div><div class="h">Who lost <span class="r">most?</span></div></div>
+    <div class="ttl" id="t_idr"><div class="k">Rupiah per US dollar</div><div class="h">A weaker <span class="r">rupiah.</span></div><div class="s">Higher = more rupiah for one dollar.</div></div>
+    <div id="brand"><div class="b1">YOUR CHANNEL</div><div class="b2">Market analysis</div></div>
+    <div id="src">Source</div>
   </div>
+
+  <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="52" data-volume="0.35" data-fade-out="2"></audio>
+  <audio id="rise" class="clip" src="assets/riser.wav" data-start="4.8" data-duration="2" data-volume="0.5"></audio>
+  <audio id="boom" class="clip" src="assets/impact.wav" data-start="6.8" data-duration="2.2" data-volume="0.8"></audio>
+  <audio id="w1" class="clip" src="assets/whoosh_a.wav" data-start="10.6" data-duration="0.9" data-volume="0.6"></audio>
+  <audio id="w2" class="clip" src="assets/whoosh_b.wav" data-start="18.8" data-duration="1.1" data-volume="0.6"></audio>
+  <audio id="w3" class="clip" src="assets/whoosh_a.wav" data-start="30.6" data-duration="0.9" data-volume="0.6"></audio>
+  <audio id="w4" class="clip" src="assets/whoosh_b.wav" data-start="36.6" data-duration="1.1" data-volume="0.6"></audio>
+  <audio id="w5" class="clip" src="assets/whoosh_a.wav" data-start="43.6" data-duration="0.9" data-volume="0.6"></audio>
+  <audio id="p1" class="clip" src="assets/pop.wav" data-start="7.2" data-duration="0.2" data-volume="0.7"></audio>
+</div>
 <script>
-  const W=1920,H=1080; const ramp=(t,a,b)=>TSCS.ramp(t,a,b); const el=(id)=>document.getElementById(id);
-  TSCS.PAL=TSCS.PAL||{}; TSCS.init&&TSCS.init();
-  TSCS.contour(el("bgsvg"),W,H,11);
+const el = (id) => document.getElementById(id), R = FC.ramp;
+const win = (t, a, b, f) => R(t, a, a + (f || 0.5)) * (1 - R(t, b - (f || 0.5), b));
+const NS = "http://www.w3.org/2000/svg";
 
-  // city dots from the baked track
-  // build 8 dots; positions come from indo-track.json injected below
-  const CITIES=["jakarta","surabaya","medan","bandung","makassar","semarang","denpasar","palembang"];
-  const dotEls={}; CITIES.forEach((c,i)=>{ const d=document.createElement("div"); d.className="dot"; d.id="dot_"+c; el("dots").appendChild(d); dotEls[c]=d; });
+/* ---------- map outline: one path per island, all draw together ---------- */
+const TR = window.__INDO_TRACK, AT = TR.areas[0];
+const outline = el("outline"), rings = [];
+const glowG = document.createElementNS(NS, "g"); outline.appendChild(glowG);
+const lineG = document.createElementNS(NS, "g"); outline.appendChild(lineG);
+AT.rings.forEach(() => {
+  const gl = document.createElementNS(NS, "path");
+  gl.setAttribute("fill", "rgba(255,255,255,0.05)"); gl.setAttribute("stroke", "rgba(255,255,255,0.35)");
+  gl.setAttribute("stroke-width", "9"); gl.setAttribute("stroke-linejoin", "round"); gl.setAttribute("pathLength", "1");
+  gl.setAttribute("stroke-dasharray", "1 1"); glowG.appendChild(gl);
+  const ln = document.createElementNS(NS, "path");
+  ln.setAttribute("fill", "none"); ln.setAttribute("stroke", "#ffffff"); ln.setAttribute("stroke-width", "2.4");
+  ln.setAttribute("stroke-linejoin", "round"); ln.setAttribute("pathLength", "1"); ln.setAttribute("stroke-dasharray", "1 1");
+  lineG.appendChild(ln); rings.push([gl, ln]);
+});
+const DRAW_AT = 2.4, DRAW_DUR = 4.0;
+function drawOutline(t) {
+  const f = Math.max(0, Math.min(AT.xy.length - 1, Math.round(t * TR.fps)));
+  const xy = AT.xy[f]; let o = 0, minY = 1e9, cx = 0, n = 0;
+  const p = R(t, DRAW_AT, DRAW_AT + DRAW_DUR);
+  AT.rings.forEach((cnt, k) => {
+    let d = "";
+    for (let i = 0; i < cnt; i++) { const X = xy[(o + i) * 2], Y = xy[(o + i) * 2 + 1];
+      d += (i ? "L" : "M") + X + " " + Y; if (cnt > 150) { cx += X; n++; minY = Math.min(minY, Y); } }
+    d += "Z"; o += cnt;
+    rings[k][0].setAttribute("d", d); rings[k][1].setAttribute("d", d);
+    rings[k][0].setAttribute("stroke-dashoffset", (1 - p).toFixed(4));
+    rings[k][1].setAttribute("stroke-dashoffset", (1 - p).toFixed(4));
+    rings[k][0].setAttribute("fill", "rgba(255,255,255," + (0.07 * R(t, DRAW_AT + DRAW_DUR - 0.5, DRAW_AT + DRAW_DUR + 0.8)).toFixed(3) + ")");
+  });
+  // country label sits under Borneo/Java middle, follows the camera
+  const lab = el("indoLabel"); if (n) { lab.style.left = (cx / n - 120) + "px"; lab.style.top = (minY + 330) + "px"; }
+  lab.style.opacity = (R(t, DRAW_AT + DRAW_DUR, DRAW_AT + DRAW_DUR + 0.6) * (1 - R(t, 10.4, 11))).toFixed(3);
+}
 
-  function sceneOpacity(t,a,b){ return ramp(t,a,a+0.6)*(1-ramp(t,b-0.6,b)); }
+/* ---------- charts (real data, D3 via fchart.js) ---------- */
+const svg = el("charts"), D = window.__DATA;
+const gLine = document.createElementNS(NS, "g"); svg.appendChild(gLine);
+const gBars = document.createElementNS(NS, "g"); svg.appendChild(gBars);
+const gIdr = document.createElementNS(NS, "g"); svg.appendChild(gIdr);
+const bank = (id) => D.banks.series.find((s) => s.id === id);
+const bri = D.bri.series[0];
+const lineChart = FC.line({ svg: gLine, x: 150, y: 290, w: 1380, h: 600, start: 19.8, end: 27.5,
+  base: 100, yTicks: 4, xTicks: 5, yFormat: (v) => v.toFixed(0),
+  series: [
+    { label: "Index", color: "#8a857b", width: 4, points: bank("^JKSE").points, valueLabel: (v) => FC.pct(v - 100), labelDy: -22 },
+    { label: "BRI", color: "#c27a86", width: 3, points: bri.points, valueLabel: (v) => FC.pct(v - 100), labelDy: 0 },
+    { label: "Mandiri", color: "#8d1b2d", width: 5, points: bank("BMRI.JK").points, valueLabel: (v) => FC.pct(v - 100), labelDy: 24 },
+    { label: "BCA", color: "#141414", width: 4, points: bank("BBCA.JK").points, valueLabel: (v) => FC.pct(v - 100), labelDy: 10 },
+  ],
+  annotations: [{ date: "2024-10-21", label: "Prabowo takes office", color: "#8d1b2d", side: "bottom" }] });
+const changes = [
+  { label: "BCA", value: bank("BBCA.JK").change_pct, color: "#141414" },
+  { label: "Mandiri", value: bank("BMRI.JK").change_pct, color: "#8d1b2d" },
+  { label: "Index (JCI)", value: bank("^JKSE").change_pct, color: "#8a857b" },
+  { label: "BRI", value: bri.change_pct, color: "#c27a86" },
+];
+const barChart = FC.bars({ svg: gBars, x: 150, y: 300, w: 1600, h: 600, horizontal: true, labelW: 300,
+  start: 37.8, stagger: 0.45, span: 0.9, format: (v) => FC.pct(v), items: changes });
+const idr = D.rupiah.series[0];
+const idrChart = FC.area({ svg: gIdr, x: 150, y: 330, w: 1380, h: 560, start: 44.8, end: 50.2,
+  yTicks: 4, xTicks: 5, yFormat: (v) => FC.num(v),
+  series: [{ label: "", color: "#8d1b2d", width: 5, points: idr.points, valueLabel: (v) => FC.num(v) }] });
 
-  function renderAt(t){
-    // SCENE A map 0-8
-    const oa=sceneOpacity(t,0.2,8);
-    el("mapwrap").style.opacity=oa.toFixed(3);
-    el("dots").style.opacity=oa.toFixed(3);
-    TSCS.title(el("ttlA"),t,1.0,7.6);
-    el("srcA").style.opacity=(ramp(t,1.2,1.8)*(1-ramp(t,7.4,8))).toFixed(3);
-    // place + pop dots from the baked track (xy[frame] = [[x,y],...] in places order)
-    const track = window.__INDO_TRACK;
-    if(track && track.xy){ const fi=Math.min(track.xy.length-1, Math.round(t*(track.fps||30))); const fr=track.xy[fi]||[];
-      track.places.forEach((c,i)=>{ const p=fr[i]; const d=dotEls[c]; if(p&&d){ d.style.left=p[0]+"px"; d.style.top=p[1]+"px";
-        const on=ramp(t, 2.0+i*0.5, 2.0+i*0.5+0.25); d.style.opacity=(on*oa).toFixed(3); d.style.transform=`scale(${(0.4+0.6*on).toFixed(2)})`; } }); }
+const SRC = [
+  [0, 11, "Map: Esri World Imagery, Natural Earth"],
+  [11, 16.8, "Footage: Reuters"],
+  [16.8, 19.2, "Footage: CNA"],
+  [19.2, 31, D.banks.source],
+  [31, 37, "Photo: Ministry of State Secretariat (Indonesia) / Wikimedia Commons"],
+  [37, 44, D.banks.source],
+  [44, 52, D.rupiah.source],
+];
 
-    // SCENE B document 8-16
-    const ob=sceneOpacity(t,8,16);
-    el("docscene").style.opacity=ob.toFixed(3);
-    TSCS.title(el("ttlB"),t,8.6,15.6);
-    el("srcB").style.opacity=(ramp(t,8.8,9.4)*(1-ramp(t,15.4,16))).toFixed(3);
-    // zoom wrap toward the boxed phrase [2480,1839,269x32] in a 1000x840 view, scaled from 3840-wide img
-    const viewW=1000, imgW=3840, baseS=viewW/imgW; // fit width
-    const box={x:2480,y:1839,w:269,h:32};
-    const zin=ramp(t,9.2,12.5);
-    const targetS=(viewW*0.6)/ (box.w) ; // fill 60% of view width with the phrase
-    const s=baseS + (targetS-baseS)*zin;
-    const bcx=box.x+box.w/2, bcy=box.y+box.h/2;
-    const tx = (viewW/2 - bcx*s), ty=(740/2 - bcy*s);
-    const tx0 = 0, ty0=0; // start top-left fit
-    el("docwrap").style.transformOrigin="0 0";
-    el("docwrap").style.transform=`translate(${(tx0+(tx-tx0)*zin).toFixed(1)}px,${(ty0+(ty-ty0)*zin).toFixed(1)}px) scale(${s.toFixed(4)})`;
-    const sweep=ramp(t,12.6,13.4);
-    el("hl").style.left=box.x+"px"; el("hl").style.top=box.y+"px"; el("hl").style.width=box.w+"px"; el("hl").style.height=box.h+"px";
-    el("hl").style.transformOrigin="left center"; el("hl").style.transform=`scaleX(${sweep.toFixed(3)})`;
+function renderAt(t) {
+  // backgrounds: night for map + news, paper for charts
+  const night = Math.max(win(t, -1, 19.4, 0.5));
+  el("night").style.opacity = night.toFixed(3);
+  el("mapvid").style.opacity = win(t, -1, 11.2, 0.6).toFixed(3);
+  el("outline").style.opacity = win(t, -1, 11.0, 0.6).toFixed(3);
+  drawOutline(Math.min(t, 15.9));
+  el("brand").style.color = t < 19.2 ? "#f3f1ec" : "#141414";
 
-    // SCENE C footage 16-24
-    const oc=sceneOpacity(t,16,23.6);
-    el("footscene").style.opacity=oc.toFixed(3);
-    TSCS.title(el("ttlC"),t,16.6,23.2);
-    el("srcC").style.opacity=(ramp(t,16.8,17.4)*(1-ramp(t,23,23.6))).toFixed(3);
-  }
-  window.addEventListener("hf-seek",(e)=>renderAt(e.detail.time)); renderAt(0);
-  window.__timelines=window.__timelines||{}; const tl=gsap.timeline({paused:true}); tl.to({},{duration:24.0},0); window.__timelines["main"]=tl;
+  TSCS.title(el("t_map"), t, 1.0, 10.6);
+  TSCS.chip(el("c_map"), t, 7.0, 10.6);
+
+  el("v_board").style.opacity = win(t, 11, 17.0, 0.5).toFixed(3);
+  el("v_lobby").style.opacity = win(t, 16.6, 19.2, 0.4).toFixed(3);
+  TSCS.title(el("t_news"), t, 11.4, 18.8);
+
+  gLine.setAttribute("opacity", win(t, 19.2, 31, 0.5).toFixed(3));
+  TSCS.title(el("t_line"), t, 19.4, 30.6);
+  lineChart.draw(t);
+
+  el("prab").style.opacity = win(t, 31, 37, 0.5).toFixed(3);
+  el("prab").style.transform = `scale(${(1.04 - 0.04 * R(t, 31, 37)).toFixed(4)})`;
+  TSCS.title(el("t_prab"), t, 31.4, 36.6);
+
+  gBars.setAttribute("opacity", win(t, 37, 44, 0.5).toFixed(3));
+  TSCS.title(el("t_bars"), t, 37.3, 43.6);
+  barChart.draw(t);
+
+  gIdr.setAttribute("opacity", win(t, 44, 52.5, 0.5).toFixed(3));
+  TSCS.title(el("t_idr"), t, 44.3, 53);
+  idrChart.draw(t);
+
+  const s = SRC.find(([a, b]) => t >= a && t < b) || SRC[SRC.length - 1];
+  el("src").textContent = s[2];
+}
+window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+renderAt(0);
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true }); tl.to({}, { duration: 52 }, 0); window.__timelines["main"] = tl;
 </script>
-<script src="assets/indo-track-win.js"></script>
 </body>
 </html>

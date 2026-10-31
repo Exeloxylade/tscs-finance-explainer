@@ -29,7 +29,14 @@ Calm, fast VO (~150 wpm). Target ~-15 LUFS.
 This style is for REAL news, so it pulls in real sources and SHOWS the source on screen
 (you also credit in the video description). Three capabilities, each with a visible credit:
 
-**A. Real satellite MAP opener** (the dark globe diving to Indonesia with city dots).
+**A. Real satellite MAP opener** - a white LINE draws around the country's coast (not dots).
+Country outline: Natural Earth `ne_50m_admin_0_countries.geojson` (GitHub nvkelso/natural-earth-vector),
+pick the country, keep island rings with >= 12 points, save the bare geometry (NOT a FeatureCollection),
+add `"areas":[{"id":"indo","file":"indonesia.geojson"}]` to shots.json and bake. The track then has
+`areas[0].xy[frame]` (flat x,y list) + `rings` (points per island). Draw one SVG path per ring with
+`pathLength=1`, `stroke-dasharray="1 1"`, animate `stroke-dashoffset` 1 -> 0 (all islands together),
+a wide faint glow path under a thin white line, then a faint fill. Template: `templates\real-media.html`.
+(The old city-dot version is below; use dots only for named cities, after the outline.)
 Use the `map-video` skill's baker - it is free + keyless on Esri imagery:
 1. Nominatim (1 req/s, with a User-Agent) for each city's lat/lng.
 2. `map\shots.json`: `"style":"satellite"` (NOT "dark" - CartoDB dark now needs an API key),
@@ -47,7 +54,19 @@ Use the `map-video` skill's baker - it is free + keyless on Esri imagery:
 inner `#docwrap` you transform; `TSCS.docZoom({wrap,box,...})` pushes the camera to the box and
 sweeps a red `#hl` highlight over the line on the spoken word. Credit: 'Source: <site>, "<title>" (<url>)'.
 
-**C. Real FOOTAGE card.** `video-automation\tools\get_footage.py`:
+**C. Real NEWS footage** - the newest clips about the story, not archive film:
+1. Find: `python -m yt_dlp "ytsearch12:<story keywords>" --flat-playlist --print "%(id)s | %(channel)s | %(title)s"`.
+   Prefer news desks (Reuters, Bloomberg, CNA, AP) and clips from the last days of the story.
+2. Take only a short part: `python -m yt_dlp <url> -f "bv*[height<=720]" --download-sections "*00:00:15-00:00:23" --force-keyframes-at-cuts -o raw\reuters.%(ext)s`.
+3. Look before using: `ffmpeg -i raw\x.mp4 -vf "fps=0.5,scale=480:-2,tile=4x1" -frames:v 1 _x.jpg` - keep the shot
+   that shows the thing (trading board, exchange lobby, price table), skip presenters talking.
+4. Convert + credit: `get_footage.py --file raw\x.mp4 --out assets --name news_board --start 2 --dur 6 --credit "Source: Reuters"`.
+5. On screen: a red-framed `<video muted>` + "Footage: Reuters" in the corner.
+People photos (presidents, ministers, CEOs): `get_image.py "<name> official portrait"` - official portraits are
+usually public domain on Wikimedia; print "Photo: <author> / Wikimedia Commons".
+Charts from real numbers: see the `finance-charts` skill.
+
+**C2. Archive / generic footage card.** `video-automation\tools\get_footage.py`:
 - Wikimedia: `get_footage.py "<query>" --out assets --name clip --list` then `--pick N --start s --dur d`.
 - The SOURCE's own clip (the realistic path for news): download it yourself (yt-dlp etc.), then
   `get_footage.py --file <path> --name clip --credit "<source>"` to convert + credit.
