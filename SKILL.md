@@ -20,8 +20,17 @@ Calm, fast VO (~150 wpm). Target ~-15 LUFS.
 
 | File | Job |
 |---|---|
-| `scripts/tscs.js` | `window.TSCS` runtime: `init`, `cue`, `ramp`/`ease`, `contour` (bg lines), `title`, `chip`, `card`, `barChart`, `lineChart`, `captions`. Pure function of t, HyperFrames-safe. |
-| `templates/index.html` | A full working ~40s film (the Indonesia opening). Copy it, swap the script, the chart data, the chapter text, the footage card. |
+| `scripts/tscs.js` | `window.TSCS` runtime. Primitives: `init`, `cue(id[,word])`, `ramp`/`ease`, `seeded`, `contour` (bg lines), `title`, `chip`, `card`, `captions`, `stage` (fade a list in sequence). Charts/scenes: `barChart`, `lineChart`, `dualLine` (two lines one axis), `dotGridCount` (dots fill + number counts up), `tiers` (developed/emerging/frontier ladder, one highlighted). Pure function of t, HyperFrames-safe. |
+| `scripts/make_timing_from_srt.py` | Build `timing.js` from a source `.srt` when you REUSE the original audio (see below). Define your scene segments at the real subtitle seconds; words spread evenly across each span. |
+| `templates/index.html` | A ~40s opening film (own voice). Copy for a short piece. |
+| `templates/index-3min.html` | The full 3-minute 6-scene film (reused original audio): hook -> MSCI-did-it -> banks dual-line -> who-crashed dot-grid + doc cards -> three suspects -> chapter-1 MSCI tiers. Copy this for a long, multi-scene finance breakdown. |
+
+## Reuse the original audio (exact-copy mode)
+When the goal is a 1:1 timing copy, skip `tts.py` and use the source's own audio:
+1. `ffmpeg -ss 0 -t <sec> -i <ref.mp4> -vn -c:a pcm_s16le -ar 48000 assets/voice.wav` (voice+music together).
+2. Edit `make_timing_from_srt.py`: list your scene segments `(id, start, end, text)` at the REAL
+   subtitle seconds, run it -> `assets/timing.js`. Now `cue("id","word")` lines graphics up to the audio.
+3. Do NOT add your own music clip - the reused track already has it. Measure, don't add.
 
 Leans on the shared video-automation tools (do not edit, copy if needed):
 `tts.py`, `words.py`, `get_image.py`, `get_footage.py`, `make_audio.py`, `probe.mjs`, under
@@ -67,10 +76,27 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
   their numbers - is for learning or a private remake, not for re-publishing as your own.
   Swap owned footage/logos for free or original assets before anything goes public.
 
+## New scene builders (added for the 3-min build)
+- `dualLine({svg,x,y,w,h,lineA:{pts,color,label},lineB:{...},cueOn,span})` - two lines trace
+  together on one axis with gridlines + end dots + labels. Use for "X down while Y up".
+- `dotGridCount({host,cols,rows,from,to,numEl,cueOn,span})` - a grid of red dots fills while a
+  big number counts up (e.g. "962 stocks screened"). `host`/`numEl` are positioned DOM.
+- `tiers({host,rows:[{label,note,hot}],cueOn,stagger})` - the menu ladder (developed/emerging/
+  frontier), the `hot` row in red. Rows slide in staggered.
+- `stage(els, t, cueOn, stagger, dur)` - fade a list of DOM els in one after another (doc cards,
+  suspect cards). Gate each scene's whole group with a `ramp(in)*(1-ramp(out))` opacity so a
+  chart from one scene does NOT linger into the next (the bug caught in the 3-min test).
+
 ## Tested
-2026-10-31: reverse-engineered TSCS "WTF Just Happened to Indonesia?" (1920x1080, 1094s,
-154.6 wpm, -15.98 LUFS). Rebuilt the ~42s opening in this style: chapter slate -> red "worst
-day" title -> $270bn lockup -> framed Jakarta card + ticker -> MSCI beat -> "look at the banks"
-bar chart (3 banks down, index up) -> TSCS end card. Rendered 42s, measured -14.61 LUFS,
-true peak -1.45 dBTP. The house style matches; raw broadcast footage in the original is not
-reproduced (it is other channels' footage).
+- 2026-10-31 (opening): reverse-engineered TSCS "WTF Just Happened to Indonesia?" (1920x1080,
+  1094s, 154.6 wpm, -15.98 LUFS). Rebuilt ~42s opening (own voice): chapter slate, red "worst
+  day" title, $270bn, Jakarta card + ticker, MSCI beat, banks bar chart, end card. 42s, -14.61 LUFS.
+- 2026-10-31 (first 3 min, exact-copy mode): reused the source's own 0-180s audio, rebuilt 6
+  scenes keyed to the real subtitle seconds - hook, MSCI-did-it (NY card + "THE END / not so
+  fast"), banks dual-line (-29% vs +19%), who-crashed (dot-grid counting to 962 + IMF/World Bank
+  doc cards + CASE OPEN), three suspects (MSCI/rupiah/state cards, suspect 3 red-boxed, 14%),
+  chapter-1 MSCI (tiers menu + freeze + gorengan). Rendered 180.0s, measured -17.54 LUFS, peak
+  -1.15 dBTP. `compare.py` vs the original's first 3 min: **84% overall** (colour 85, bright 85,
+  layout 82), duration delta 0.01s. The weak seconds (2-13s) are exactly where the original uses
+  borrowed broadcast footage (IGR anchor, CNA "$138bn" ticker) - that footage is other channels'
+  and is intentionally re-expressed in the TSCS house style, not copied pixel-for-pixel.

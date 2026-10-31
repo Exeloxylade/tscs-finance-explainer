@@ -213,5 +213,113 @@
     };
   };
 
+  // ---- dual line chart: two lines on one axis (e.g. banks down, index up) ----
+  // cfg {svg, x, y, w, h, lineA:{pts,color,label}, lineB:{...}, cueOn, span}
+  TSCS.dualLine = function (cfg) {
+    const NS = "http://www.w3.org/2000/svg";
+    const g = document.createElementNS(NS, "g"); cfg.svg.appendChild(g);
+    // axis baseline + faint gridlines
+    for (let i = 0; i <= 4; i++) {
+      const gy = cfg.y + (i / 4) * cfg.h;
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", cfg.x); l.setAttribute("x2", cfg.x + cfg.w);
+      l.setAttribute("y1", gy); l.setAttribute("y2", gy);
+      l.setAttribute("stroke", TSCS.PAL.grid); l.setAttribute("stroke-width", "1");
+      g.appendChild(l);
+    }
+    function mkLine(spec) {
+      const n = spec.pts.length;
+      const px = (i) => cfg.x + (i / (n - 1)) * cfg.w;
+      const py = (v) => cfg.y + cfg.h - v * cfg.h;
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("fill", "none"); path.setAttribute("stroke", spec.color);
+      path.setAttribute("stroke-width", spec.width || "3.5");
+      path.setAttribute("stroke-linecap", "round"); path.setAttribute("stroke-linejoin", "round");
+      g.appendChild(path);
+      const dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("r", "7"); dot.setAttribute("fill", spec.color); g.appendChild(dot);
+      const lab = document.createElementNS(NS, "text");
+      lab.setAttribute("fill", spec.color); lab.setAttribute("font-weight", "800");
+      lab.setAttribute("font-size", "26"); lab.textContent = spec.label || ""; g.appendChild(lab);
+      return { spec, path, dot, lab, px, py, n };
+    }
+    const A = mkLine(cfg.lineA), B = mkLine(cfg.lineB);
+    function drawOne(m, prog) {
+      const lastI = prog * (m.n - 1), whole = Math.floor(lastI);
+      let d = "M" + m.px(0).toFixed(1) + " " + m.py(m.spec.pts[0]).toFixed(1);
+      for (let i = 1; i <= whole; i++) d += "L" + m.px(i).toFixed(1) + " " + m.py(m.spec.pts[i]).toFixed(1);
+      let dx = m.px(whole), dy = m.py(m.spec.pts[whole]);
+      if (whole < m.n - 1) { const f = lastI - whole;
+        dx = m.px(whole) + (m.px(whole + 1) - m.px(whole)) * f;
+        dy = m.py(m.spec.pts[whole]) + (m.py(m.spec.pts[whole + 1]) - m.py(m.spec.pts[whole])) * f;
+        d += "L" + dx.toFixed(1) + " " + dy.toFixed(1); }
+      m.path.setAttribute("d", d);
+      m.dot.setAttribute("cx", dx.toFixed(1)); m.dot.setAttribute("cy", dy.toFixed(1));
+      m.dot.setAttribute("opacity", prog > 0.02 ? "1" : "0");
+      m.lab.setAttribute("x", (dx + 14).toFixed(1)); m.lab.setAttribute("y", (dy + 6).toFixed(1));
+      m.lab.setAttribute("opacity", prog > 0.85 ? "1" : "0");
+    }
+    return { draw(t) {
+      const prog = TSCS.ramp(t, cfg.cueOn, cfg.cueOn + (cfg.span || 2.4));
+      drawOne(A, prog); drawOne(B, prog);
+    } };
+  };
+
+  // ---- counting dot grid: a block of dots fills + a big number counts up ----
+  // cfg {host, cols, rows, from, to, numEl, cueOn, span}  host is a positioned DIV
+  TSCS.dotGridCount = function (cfg) {
+    const total = cfg.cols * cfg.rows;
+    const dots = [];
+    cfg.host.style.display = "grid";
+    cfg.host.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+    cfg.host.style.gap = (cfg.gap || 6) + "px";
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement("div");
+      d.style.width = d.style.height = (cfg.size || 10) + "px";
+      d.style.borderRadius = "2px"; d.style.background = TSCS.PAL.red; d.style.opacity = "0";
+      cfg.host.appendChild(d); dots.push(d);
+    }
+    return { draw(t) {
+      const prog = TSCS.ramp(t, cfg.cueOn, cfg.cueOn + (cfg.span || 3));
+      const lit = Math.round(prog * total);
+      for (let i = 0; i < total; i++) dots[i].style.opacity = i < lit ? "0.92" : "0.08";
+      if (cfg.numEl) cfg.numEl.textContent = Math.round(cfg.from + (cfg.to - cfg.from) * prog).toLocaleString();
+    } };
+  };
+
+  // ---- tiers ladder: developed / emerging / frontier rows, one highlighted ----
+  // cfg {host, rows:[{label,note,hot}], cueOn, stagger}  host positioned DIV
+  TSCS.tiers = function (cfg) {
+    const made = cfg.rows.map((r) => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;gap:18px;margin:10px 0;padding:16px 22px;"
+        + "border-radius:8px;opacity:0;background:" + (r.hot ? TSCS.PAL.red : "#e9e5de")
+        + ";color:" + (r.hot ? "#fff" : TSCS.PAL.ink) + ";";
+      const lab = document.createElement("div");
+      lab.style.cssText = "font-size:34px;font-weight:800;"; lab.textContent = r.label;
+      const note = document.createElement("div");
+      note.style.cssText = "font-size:22px;opacity:0.8;"; note.textContent = r.note || "";
+      row.appendChild(lab); row.appendChild(note); cfg.host.appendChild(row);
+      return row;
+    });
+    return { draw(t) {
+      made.forEach((row, i) => {
+        const on = TSCS.ramp(t, cfg.cueOn + i * (cfg.stagger || 0.5),
+                             cfg.cueOn + i * (cfg.stagger || 0.5) + 0.4);
+        row.style.opacity = on.toFixed(3);
+        row.style.transform = `translateX(${((1 - on) * 30).toFixed(1)}px)`;
+      });
+    } };
+  };
+
+  // ---- generic staged reveal: fade a list of DOM els in one after another ----
+  TSCS.stage = function (els, t, cueOn, stagger, dur) {
+    els.forEach((el, i) => {
+      const a = TSCS.ramp(t, cueOn + i * (stagger || 0.4), cueOn + i * (stagger || 0.4) + (dur || 0.4));
+      el.style.opacity = a.toFixed(3);
+      el.style.transform = `translateY(${((1 - a) * 16).toFixed(1)}px)`;
+    });
+  };
+
   window.TSCS = TSCS;
 })();

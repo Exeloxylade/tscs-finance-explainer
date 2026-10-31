@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="assets/timing.js"></script>
+<script src="assets/credits.js"></script>
+<script src="lib/tscs.js"></script>
+<style>
+  :root{
+    --bg:#f3f1ec; --ink:#141414; --sub:#6b6b6b;
+    --red:#8d1b2d; --redText:#a8203a; --line:#c9c4ba; --grid:#ddd8cf;
+    --font:"Inter","Segoe UI",Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);}
+  #root{position:relative;width:1920px;height:1080px;font-family:var(--font);color:var(--ink);background:var(--bg);}
+  #bg{position:absolute;inset:0;z-index:0;}
+  #bg svg{width:1920px;height:1080px;display:block;}
+  /* dark backdrop used by night-skyline scenes */
+  #dark{position:absolute;inset:0;z-index:1;background:#0b0e14;opacity:0;}
+  #dark img{width:100%;height:100%;object-fit:cover;opacity:0.5;}
+  #stage{position:absolute;inset:0;z-index:2;}
+  #stage svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible;}
+  #brand{position:absolute;right:54px;top:40px;z-index:8;text-align:right;}
+  #brand .b1{font-size:30px;font-weight:800;letter-spacing:0.18em;color:var(--ink);}
+  #brand .b2{font-size:15px;letter-spacing:0.14em;color:var(--sub);margin-top:2px;}
+  #foot{position:absolute;left:54px;bottom:34px;z-index:8;font-size:16px;letter-spacing:0.12em;color:#5a564e;text-transform:uppercase;font-weight:600;}
+  .ttitle{position:absolute;left:96px;top:70px;z-index:6;max-width:1200px;}
+  .ttitle .k{font-size:22px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--redText);}
+  .ttitle .h{font-size:60px;font-weight:800;line-height:1.02;margin-top:8px;color:var(--ink);}
+  .ttitle .h .r{color:var(--redText);}
+  .ttitle .s{font-size:24px;color:var(--sub);margin-top:14px;max-width:700px;line-height:1.35;}
+  .ttitle.ondark .h{color:#f3f1ec;} .ttitle.ondark .s{color:#c7c2b8;}
+  .chip{position:absolute;z-index:7;padding:9px 16px;font-size:24px;font-weight:800;color:#fff;background:var(--red);border-radius:4px;transform-origin:left center;box-shadow:0 8px 24px rgba(0,0,0,0.18);white-space:nowrap;}
+  .chip.dark{background:#141414;}
+  .bignum{position:absolute;z-index:7;}
+  .bignum .n{font-size:128px;font-weight:800;line-height:0.9;color:var(--ink);letter-spacing:-0.03em;}
+  .bignum .n .r{color:var(--redText);}
+  .bignum .c{font-size:24px;color:var(--sub);margin-top:6px;}
+  .bignum.ondark .n{color:#f3f1ec;}
+  .card{position:absolute;z-index:5;border:3px solid var(--red);background:#111;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,0.28);transform-origin:center;}
+  .card img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card .cap{position:absolute;left:0;bottom:0;background:var(--red);color:#fff;font-size:15px;font-weight:700;letter-spacing:0.05em;padding:5px 11px;text-transform:uppercase;}
+  .doc{position:absolute;z-index:6;width:150px;height:200px;background:#f6f4ef;border:1px solid #d8d3c8;box-shadow:0 14px 34px rgba(0,0,0,0.4);padding:14px;transform-origin:bottom center;}
+  .doc .dtag{font-size:11px;font-weight:800;color:var(--redText);letter-spacing:0.08em;}
+  .doc .dttl{font-size:17px;font-weight:800;margin-top:10px;line-height:1.1;color:#222;}
+  .doc .dsub{font-size:11px;color:#888;margin-top:8px;}
+  .suspect{position:absolute;z-index:6;width:270px;background:#15181f;border:2px solid #2a2f3a;border-radius:6px;overflow:hidden;}
+  .suspect.hot{border-color:var(--red);}
+  .suspect img{width:100%;height:190px;object-fit:cover;display:block;}
+  .suspect .sn{font-size:12px;font-weight:800;letter-spacing:0.12em;color:var(--redText);padding:12px 14px 0;}
+  .suspect .st{font-size:28px;font-weight:800;color:#f3f1ec;padding:2px 14px 0;}
+  .suspect .ss{font-size:15px;color:#9a9fab;padding:4px 14px 16px;}
+  #chapter{position:absolute;inset:0;z-index:9;background:#111;color:#f3f1ec;display:flex;flex-direction:column;justify-content:center;padding-left:120px;opacity:0;}
+  #chapter .cn{font-size:120px;font-weight:800;color:var(--redText);line-height:0.9;}
+  #chapter .ct{font-size:60px;font-weight:800;margin-top:10px;}
+  #chapter .cs{font-size:26px;color:#b9b4ab;margin-top:16px;}
+  #capHost{position:absolute;left:0;right:0;bottom:120px;height:120px;z-index:8;text-align:center;}
+  .tcap{display:none;font-size:42px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;padding:0 160px;text-shadow:0 2px 14px rgba(243,241,236,0.9);}
+  .tcap.ondark{color:#f3f1ec;text-shadow:0 2px 16px rgba(0,0,0,0.9);}
+  .tcap .tw{display:inline-block;opacity:0.4;margin:0 4px;}
+  .tcap .tw.on{opacity:1;} .tcap .tw.now{color:var(--redText);}
+  #credit{position:absolute;right:40px;top:92px;z-index:8;font-size:14px;color:#9a958c;max-width:520px;text-align:right;opacity:0;}
+  .ondarkcredit{color:#cfc9bf !important;}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="180.0" data-width="1920" data-height="1080">
+
+    <div id="bg" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow><svg id="bgsvg"></svg></div>
+    <div id="dark" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow><img id="darkimg" src="assets/jkt.jpg" alt=""></div>
+
+    <div id="brand" class="clip" data-start="0" data-duration="180.0"><div class="b1">TSCS</div><div class="b2">TSCS Analysis</div></div>
+    <div id="foot" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow><span id="foottxt">01 - THE WORST DAY SINCE 1998</span></div>
+    <div id="credit" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow><span id="credittxt"></span></div>
+
+    <div id="stage" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow>
+      <svg id="gsvg"></svg>
+
+      <!-- SCENE 1 hook -->
+      <div class="ttitle" id="t_hook" style="opacity:0">
+        <div class="k">Jakarta / market report</div>
+        <div class="h">Indonesia's <span class="r">worst day</span><br>since 1998.</div>
+        <div class="s">11.6% of the market evaporated in one day.</div>
+      </div>
+      <div class="chip" id="c_worst" style="left:96px;top:300px;opacity:0">WORST DAY SINCE 1998</div>
+      <div class="bignum" id="n_270" style="left:1140px;top:380px;opacity:0">
+        <div class="n"><span class="r">$270</span>bn</div><div class="c">of share value gone since January</div>
+      </div>
+
+      <!-- SCENE 2 MSCI did it -->
+      <div class="card" id="cd_ny" style="left:1120px;top:300px;width:560px;height:320px;opacity:0"><img src="assets/ny.jpg"><div class="cap">New York / Thursday night</div></div>
+      <div class="ttitle ondark" id="t_msci" style="opacity:0">
+        <div class="k">Thursday night</div>
+        <div class="h">MSCI votes to <span class="r">cut</span><br>Indonesia loose.</div>
+        <div class="s">Proposal: move Indonesia out of emerging markets, straight to standalone.</div>
+      </div>
+      <div class="bignum ondark" id="t_notfast" style="left:96px;top:380px;opacity:0">
+        <div class="n">MSCI did it?<br><span class="r">THE END.</span></div><div class="c" style="color:#c7c2b8">Not so fast.</div>
+      </div>
+
+      <!-- SCENE 3 banks dual line -->
+      <div class="ttitle" id="t_banks" style="opacity:0">
+        <div class="k">The real suspect</div>
+        <div class="h">Before MSCI moved:<br><span class="r">banks down,</span> index up.</div>
+      </div>
+      <svg id="banksvg" style="position:absolute;inset:0;width:1920px;height:1080px;overflow:visible"></svg>
+      <div class="chip" id="c_bank" style="left:1300px;top:720px;opacity:0">Mandiri -29%</div>
+      <div class="chip dark" id="c_idx" style="left:1300px;top:360px;opacity:0">Index +19%</div>
+      <div class="chip" id="c_bleed" style="left:96px;top:300px;opacity:0">Banks bleeding, market rising</div>
+
+      <!-- SCENE 4 who crashed + grunt work + dot grid -->
+      <div class="ttitle ondark" id="t_who" style="opacity:0">
+        <div class="k">The investigation</div>
+        <div class="h">Who really crashed<br><span class="r">Indonesia?</span></div>
+      </div>
+      <div id="dotgrid" style="position:absolute;left:1120px;top:300px;width:520px;z-index:6"></div>
+      <div class="bignum ondark" id="n_stocks" style="left:1120px;top:720px;opacity:0">
+        <div class="n" id="stocksnum" style="font-size:96px">0</div><div class="c" style="color:#c7c2b8">stocks screened &middot; 30 years of IMF files</div>
+      </div>
+      <div class="doc" id="doc1" style="left:1150px;top:360px;transform:rotate(-6deg);opacity:0"><div class="dtag">IMF</div><div class="dttl">Letter of Intent, Indonesia</div><div class="dsub">October 1998</div></div>
+      <div class="doc" id="doc2" style="left:1320px;top:360px;transform:rotate(1deg);opacity:0"><div class="dtag">WORLD BANK</div><div class="dttl">Indonesia Economic Prospects</div><div class="dsub">2026</div></div>
+      <div class="doc" id="doc3" style="left:1490px;top:360px;transform:rotate(7deg);opacity:0"><div class="dtag">IMF</div><div class="dttl">Article IV consultation</div><div class="dsub">2026</div></div>
+      <div class="chip" id="c_caseopen" style="left:1320px;top:600px;opacity:0">CASE OPEN</div>
+
+      <!-- SCENE 5 three suspects -->
+      <div class="ttitle ondark" id="t_sus" style="opacity:0;top:60px">
+        <div class="k">As in every murder mystery</div>
+        <div class="h">Three suspects. <span class="r">One culprit.</span></div>
+      </div>
+      <div class="suspect" id="s1" style="left:300px;top:360px;opacity:0"><img src="assets/msci.jpg"><div class="sn">SUSPECT 1</div><div class="st">MSCI</div><div class="ss">The index company</div></div>
+      <div class="suspect" id="s2" style="left:620px;top:360px;opacity:0"><img src="assets/rupiah.jpg"><div class="sn">SUSPECT 2</div><div class="st">The rupiah</div><div class="ss">Near 18,000 per dollar</div></div>
+      <div class="suspect hot" id="s3" style="left:940px;top:360px;opacity:0"><img src="assets/state.jpg"><div class="sn">SUSPECT 3</div><div class="st">The state</div><div class="ss">Prabowo's government</div></div>
+      <div class="bignum" id="n_14" style="left:1320px;top:420px;opacity:0"><div class="n"><span class="r">14%</span></div><div class="c">a year, in dividends &middot; the bank we're buying</div></div>
+
+      <!-- SCENE 6 chapter 1 MSCI tiers -->
+      <div class="ttitle" id="t_tiers" style="opacity:0">
+        <div class="k">Suspect one / MSCI</div>
+        <div class="h">MSCI writes <span class="r">the menu.</span></div>
+        <div class="s">It sorts every country into tiers. Funds just buy the list.</div>
+      </div>
+      <div id="tierhost" style="position:absolute;left:1050px;top:320px;width:640px;z-index:6"></div>
+      <div class="chip" id="c_freeze" style="left:96px;top:380px;opacity:0">January: MSCI freezes Indonesia</div>
+      <div class="chip dark" id="c_goreng" style="left:96px;top:470px;opacity:0">Locals called them "gorengan"</div>
+    </div>
+
+    <!-- chapter slate -->
+    <div id="chapter" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow>
+      <div class="cn" id="chap_n">01</div><div class="ct" id="chap_t">The worst day<br>since 1998</div><div class="cs" id="chap_s">Who really crashed Indonesia?</div>
+    </div>
+
+    <div id="capHost" class="clip" data-start="0" data-duration="180.0" data-layout-allow-overflow></div>
+
+    <!-- REUSED ORIGINAL AUDIO (voice + music, first 180s of the source) -->
+    <audio id="voice" class="clip" src="assets/voice.wav" data-start="0" data-duration="180.0" data-volume="1.0"></audio>
+  </div>
+
+<script>
+  const W=1920,H=1080; TSCS.init();
+  const cue=TSCS.cue, ramp=TSCS.ramp, el=(id)=>document.getElementById(id);
+  TSCS.contour(el("bgsvg"), W, H, 11);
+
+  // ---------- chapter slate (0 -> 2.4s) ----------
+  function chapter(t){ el("chapter").style.opacity=(ramp(t,0,0.3)*(1-ramp(t,2.0,2.4))).toFixed(3); }
+
+  // ---------- SCENE 3: banks dual-line chart ----------
+  // red = Mandiri (falls from 1.0 to ~0.3), grey = index (rises to ~0.85)
+  const bankLine = TSCS.dualLine({
+    svg: el("banksvg"), x:540, y:330, w:900, h:470,
+    lineA:{ pts:[0.82,0.74,0.62,0.55,0.48,0.40,0.35,0.30,0.34,0.31], color:"#8d1b2d", width:4, label:"-29%" },
+    lineB:{ pts:[0.50,0.52,0.55,0.58,0.63,0.69,0.74,0.80,0.83,0.85], color:"#9c968b", width:3, label:"+19%" },
+    cueOn: cue("banks","banks"), span: 8.0
+  });
+
+  // ---------- SCENE 4: dot grid counter 0 -> 962 ----------
+  const dotCount = TSCS.dotGridCount({
+    host: el("dotgrid"), cols:31, rows:16, from:0, to:962, size:9, gap:4,
+    numEl: el("stocksnum"), cueOn: cue("whodunnit","screened")-6.5, span: 7.0
+  });
+
+  // ---------- SCENE 6: tiers ladder ----------
+  const tiers = TSCS.tiers({
+    host: el("tierhost"), cueOn: cue("chapter1","tiers"), stagger:0.6,
+    rows:[
+      {label:"Developed", note:"like America"},
+      {label:"Emerging", note:"like Indonesia & India", hot:true},
+      {label:"Frontier", note:"the small ones"},
+    ]
+  });
+
+  function showCredit(t, name, on, off, ondark){
+    const c = (window.__CREDITS && window.__CREDITS[name]) || "";
+    el("credittxt").textContent = c;
+    el("credittxt").className = ondark ? "ondarkcredit" : "";
+    el("credit").style.opacity = (ramp(t,on,on+0.4)*(1-ramp(t,off,off+0.4))).toFixed(3);
+  }
+
+  function renderAt(t){
+    chapter(t);
+
+    // dark backdrop on scenes 2,4,5 (night skylines); off-white elsewhere
+    const d1 = ramp(t, cue("msci")-0.3, cue("msci")+0.3)*(1-ramp(t, cue("banks")-0.4, cue("banks")));
+    const d2 = ramp(t, cue("whodunnit")-0.3, cue("whodunnit")+0.3)*(1-ramp(t, cue("chapter1")-0.4, cue("chapter1")));
+    el("dark").style.opacity = Math.max(d1, d2).toFixed(3);
+    el("darkimg").src = t < cue("banks") ? "assets/ny.jpg" : "assets/jkt.jpg";
+
+    // footer tag per section
+    el("foottxt").textContent = t < cue("banks") ? "01 - THE WORST DAY SINCE 1998"
+      : t < cue("chapter1") ? "01 - WHO REALLY CRASHED INDONESIA" : "02 - SUSPECT ONE: MSCI";
+
+    // SCENE 1 hook
+    TSCS.title(el("t_hook"), t, 2.5, cue("msci")-0.3);
+    TSCS.chip(el("c_worst"), t, cue("hook","1998")+0.2, cue("msci")-0.3);
+    TSCS.chip(el("n_270"), t, cue("billions","270"), cue("msci")-0.3);
+
+    // SCENE 2 MSCI did it
+    TSCS.card(el("cd_ny"), t, cue("msci","MSCI"), cue("banks")-0.3);
+    TSCS.title(el("t_msci"), t, cue("msci","MSCI")+0.2, cue("notfast")-0.1);
+    TSCS.stage([el("t_notfast")], t, cue("notfast","did"), 0.1, 0.4);
+    el("t_notfast").style.opacity = (ramp(t,cue("notfast","did"),cue("notfast","did")+0.4)*(1-ramp(t,cue("banks")-0.3,cue("banks")))).toFixed(3);
+
+    // SCENE 3 banks (only during its window; fade the whole chart group out after)
+    const banksVis = ramp(t, cue("banks")-0.3, cue("banks")) * (1 - ramp(t, cue("whodunnit")-0.5, cue("whodunnit")-0.1));
+    el("banksvg").style.opacity = banksVis.toFixed(3);
+    TSCS.title(el("t_banks"), t, cue("banks","banks")-0.1, cue("whodunnit")-0.3);
+    bankLine.draw(t);
+    TSCS.chip(el("c_bank"), t, cue("banks","quarter"), cue("whodunnit")-0.3);
+    TSCS.chip(el("c_idx"), t, cue("index","rose"), cue("whodunnit")-0.3);
+    TSCS.chip(el("c_bleed"), t, cue("index","bleeding"), cue("whodunnit")-0.3);
+
+    // SCENE 4 who crashed + grunt + dots (hide the grid outside its window)
+    const dotsVis = ramp(t, cue("whodunnit")-0.3, cue("whodunnit")) * (1 - ramp(t, cue("suspects")-0.5, cue("suspects")-0.1));
+    el("dotgrid").style.opacity = dotsVis.toFixed(3);
+    TSCS.title(el("t_who"), t, cue("whodunnit","crashed")-0.2, cue("suspects")-0.3);
+    dotCount.draw(t);
+    el("n_stocks").style.opacity = (ramp(t,cue("whodunnit","screened")-6.0,cue("whodunnit","screened")-5.0)*(1-ramp(t,cue("suspects")-0.3,cue("suspects")))).toFixed(3);
+    TSCS.stage([el("doc1"),el("doc2"),el("doc3")], t, cue("whodunnit","IMF")||cue("whodunnit","files")-2, 0.3, 0.4);
+    [el("doc1"),el("doc2"),el("doc3")].forEach(d=>{ d.style.opacity=(parseFloat(d.style.opacity||0)*(1-ramp(t,cue("suspects")-0.3,cue("suspects")))).toFixed(3); });
+    TSCS.chip(el("c_caseopen"), t, cue("suspects")-1.0, cue("suspects")-0.2);
+
+    // SCENE 5 three suspects
+    TSCS.title(el("t_sus"), t, cue("suspects","suspects")-0.1, cue("chapter1")-0.3);
+    TSCS.stage([el("s1"),el("s2"),el("s3")], t, cue("suspects","suspects")+0.2, 0.5, 0.45);
+    [el("s1"),el("s2"),el("s3")].forEach(s=>{ s.style.opacity=(parseFloat(s.style.opacity||0)*(1-ramp(t,cue("chapter1")-0.3,cue("chapter1")))).toFixed(3); });
+    TSCS.chip(el("n_14"), t, cue("suspects","14%")||cue("suspects","dividend"), cue("chapter1")-0.3);
+
+    // SCENE 6 chapter 1 MSCI + tiers
+    TSCS.title(el("t_tiers"), t, cue("chapter1","menu"), cue("fix")+2);
+    tiers.draw(t);
+    TSCS.chip(el("c_freeze"), t, cue("funds","froze"), cue("gorengan"));
+    TSCS.chip(el("c_goreng"), t, cue("gorengan","gorengan"), 180);
+
+    // credit chips follow whichever photo is on screen
+    if (t < cue("banks")) showCredit(t, "ny", cue("msci"), cue("banks")-0.3, true);
+    else if (t < cue("suspects")) showCredit(t, "jkt", cue("whodunnit"), cue("suspects")-0.3, true);
+    else if (t < cue("chapter1")) showCredit(t, "state", cue("suspects"), cue("chapter1")-0.3, true);
+    else showCredit(t, "msci", cue("chapter1")+1, cue("fix"), false);
+  }
+
+  // captions: switch to light text on the dark scenes
+  const capHost = el("capHost");
+  const renderCaps = TSCS.captions(capHost, (window.__TIMING&&window.__TIMING.segments)||[]);
+  function capDark(t){
+    const dark = el("dark").style.opacity && parseFloat(el("dark").style.opacity) > 0.4;
+    capHost.querySelectorAll(".tcap").forEach(c=>c.classList.toggle("ondark", dark));
+  }
+
+  window.addEventListener("hf-seek",(e)=>{ renderAt(e.detail.time); renderCaps(e.detail.time); capDark(e.detail.time); });
+  renderAt(0);
+
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({paused:true}); tl.to({},{duration:180.0},0);
+  window.__timelines["main"]=tl;
+</script>
+</body>
+</html>
