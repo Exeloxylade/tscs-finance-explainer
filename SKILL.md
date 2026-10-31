@@ -156,13 +156,13 @@ value, `bg()` full-bleed photo with slow push + drift, `flow()` dots travelling 
 red diagonal `wipe` into chapter slates. Rule: a real photo or footage in EVERY scene
 (`image_hunt.py`), something new on screen every 1-2 s.
 SFX level: swish 0.22, thud 0.32, tick 0.30 (peaks ~17 dB under the voice). At a cut that starts a
-new sentence the voice itself dominates `sfx_probe.py`, so check SFX against a voice-only run.
+new sentence the voice itself dominates `reva\scripts\sfx_probe.py`, so check SFX against a voice-only run.
 
 ## Technique: transition sound (measured)
 Reference transitions (first 3 min, 13 cuts): bright part ~0.2 s, +19.4 dB in 4-8 kHz over its surroundings,
 +4.9 dB low body. The old 0.9 s whoosh was 3.5x longer and played at 0.45-0.6 under a -1 dBFS peak.
 Use `swish_a/b/c.wav` (make_audio.py) at 0.55, 0.15 s after each cut; `tick.wav` 0.5 for chips; `thud.wav` 0.6
-for a stamp. No risers. Verify with `video-automation\tools\sfx_probe.py`. Result on `videos\indo-crash`:
+for a stamp. No risers. Verify with `reva\scripts\sfx_probe.py`. Result on `videos\indo-crash`:
 +17.1 dB / 0.20 s / +6.4 dB, film at -13.8 LUFS.
 
 ## Technique: data line chart with photo cards (measured, eye-checked)
