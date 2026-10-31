@@ -1,0 +1,30 @@
+{
+  "voice": "en-US-AndrewMultilingualNeural",
+  "rate": "+0%",
+  "lead": 0.5,
+  "gap": 0.35,
+  "tail": 2.0,
+  "caption_words": 6,
+  "segments": [
+    { "id": "hook", "text": "Friday, October sixteenth. Jakarta's trading screens turn red. By the close, Indonesia's main index has fallen almost twelve percent, its steepest one day drop since 1998.", "gap_after": 0.5 },
+    { "id": "lost", "text": "Since January, the index has lost about forty percent.", "gap_after": 0.45 },
+    { "id": "blame", "text": "The headlines name one culprit. MSCI, the company whose indexes guide trillions of dollars of global investment.", "gap_after": 0.4 },
+    { "id": "proposal", "text": "It is weighing whether Indonesia should stay in its emerging markets index at all.", "gap_after": 0.5 },
+    { "id": "butbanks", "text": "But the price data tells a longer story.", "gap_after": 0.4 },
+    { "id": "chart", "text": "Rebase the big banks to the day before Prabowo took office. BCA is down almost half. Mandiri, a third. For more than a year, the index rose while the banks sank.", "gap_after": 0.5 },
+    { "id": "who", "text": "So this is not one bad week. It is a slow leak that finally burst.", "gap_after": 0.45 },
+    { "id": "suspects", "text": "Three forces are worth checking. The index providers. The currency. And the government.", "gap_after": 0.6 },
+    { "id": "ch1", "text": "Part one. Why an index provider matters.", "gap_after": 0.5 },
+    { "id": "menu", "text": "MSCI groups countries into developed, emerging and frontier markets, based on size, openness and how easy it is for foreigners to trade.", "gap_after": 0.45 },
+    { "id": "funds", "text": "Passive funds copy those indexes automatically. If a country's weight goes up, they buy. If it goes down, they sell, no matter what anyone thinks of the companies.", "gap_after": 0.4 },
+    { "id": "kicked", "text": "So a downgrade is not an opinion. It is a sell order.", "gap_after": 0.5 },
+    { "id": "freeze", "text": "In January, MSCI paused all increases to Indonesia's weight.", "gap_after": 0.4 },
+    { "id": "why", "text": "Its concern was transparency. For many listed firms, it was hard to see who really controlled the shares.", "gap_after": 0.45 },
+    { "id": "gorengan", "text": "Indonesian traders have a word for the worst of these stocks. Gorengan. Fried food.", "gap_after": 0.45 },
+    { "id": "pump", "text": "When only a small slice of a company trades, a few holders can move the price easily. Push it up, attract buyers, then sell into the rush.", "gap_after": 0.45 },
+    { "id": "drop", "text": "After the freeze, the index fell about eight percent in two sessions.", "gap_after": 0.4 },
+    { "id": "quit", "text": "Soon after, the heads of the stock exchange and of the financial regulator stepped down.", "gap_after": 0.5 },
+    { "id": "fix", "text": "The response was a new floor. Listed companies must have at least fifteen percent of their shares in public hands, twice the old level.", "gap_after": 0.4 },
+    { "id": "end", "text": "It was a real reform. The question is whether it came in time. That is where the currency comes in." }
+  ]
+}

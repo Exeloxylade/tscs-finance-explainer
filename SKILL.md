@@ -131,6 +131,24 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
   their numbers - is for learning or a private remake, not for re-publishing as your own.
   Swap owned footage/logos for free or original assets before anything goes public.
 
+## Full news explainer template (best result so far)
+`templates\news-explainer.html` - 2 min 24 s, 20 scenes, own script + own edge-tts voice,
+tested 2026-10-31 (`videos\indo-crash`, -14.9 LUFS, peak -1.45 dBTP). Uses every skill:
+coastline-line map opener (map-video) -> real news clips (yt-dlp sections) -> real-data charts
+(finance-charts: YTD area, rebased bank lines with a "took office" marker, January drop line,
+float bars, currency area) -> document zoom (capture.mjs) -> menu/tier board with real flag
+images (flagcdn.com, local PNGs - emoji flags do not render on Windows Chrome) -> leader photos
+(Wikimedia) -> numbered black chapter slates -> karaoke captions -> source line on every moment.
+Lessons from this build:
+- Fact-check every number in the script against the data you pulled BEFORE making the voice
+  (the first draft said the wrong date and "a third this year"; the data said 16 Oct and -41.5%).
+- End a chart's draw-on on the word that states its number, so the chip and the line agree.
+- Captions sit 96 px from the bottom: keep chart boxes <= y 840 so axis labels are not covered.
+- Captions need two looks: dark text with a paper stroke on light scenes, white with a black
+  stroke on dark scenes - toggle a class from the same `dark` value that drives the background.
+- Mark made-up shapes on screen ("Illustration, not real data").
+- No photo of a person? Use a plain name card, never a wrong face.
+
 ## New scene builders (added for the 3-min build)
 - `dualLine({svg,x,y,w,h,lineA:{pts,color,label},lineB:{...},cueOn,span})` - two lines trace
   together on one axis with gridlines + end dots + labels. Use for "X down while Y up".
