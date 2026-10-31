@@ -1,0 +1,227 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="assets/timing.js"></script>
+<script src="lib/tscs.js"></script>
+<style>
+  :root{
+    --bg:#f3f1ec; --ink:#141414; --sub:#6b6b6b;
+    --red:#8d1b2d; --redText:#a8203a; --line:#c9c4ba; --grid:#ddd8cf; --foot:#8a857b;
+    --font:"Inter","Segoe UI",Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);}
+  #root{position:relative;width:1920px;height:1080px;font-family:var(--font);color:var(--ink);background:var(--bg);}
+  #bg{position:absolute;inset:0;z-index:0;}
+  #bg svg{width:1920px;height:1080px;display:block;}
+  #stage{position:absolute;inset:0;z-index:2;}
+  #stage svg{position:absolute;inset:0;width:1920px;height:1080px;overflow:visible;}
+  /* brand corner */
+  #brand{position:absolute;right:54px;top:40px;z-index:8;text-align:right;}
+  #brand .b1{font-size:30px;font-weight:800;letter-spacing:0.18em;color:var(--ink);}
+  #brand .b2{font-size:15px;letter-spacing:0.14em;color:var(--sub);margin-top:2px;}
+  #foot{position:absolute;left:54px;bottom:34px;z-index:8;font-size:16px;letter-spacing:0.12em;color:#5a564e;text-transform:uppercase;font-weight:600;}
+  /* top-left title */
+  .ttitle{position:absolute;left:96px;top:70px;z-index:6;max-width:1100px;}
+  .ttitle .k{font-size:22px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--redText);}
+  .ttitle .h{font-size:64px;font-weight:800;line-height:1.02;margin-top:8px;color:var(--ink);}
+  .ttitle .h .r{color:var(--redText);}
+  .ttitle .s{font-size:24px;color:var(--sub);margin-top:14px;max-width:620px;line-height:1.35;}
+  /* red / black callout chips */
+  .chip{position:absolute;z-index:7;padding:10px 18px;font-size:26px;font-weight:800;
+        letter-spacing:0.02em;color:#fff;background:var(--red);border-radius:4px;transform-origin:left center;
+        box-shadow:0 8px 24px rgba(0,0,0,0.18);white-space:nowrap;}
+  .chip.dark{background:#141414;}
+  .chip.sub{font-size:18px;font-weight:600;background:#efece6;color:var(--ink);box-shadow:none;}
+  /* big number lockup */
+  .bignum{position:absolute;z-index:7;}
+  .bignum .n{font-size:132px;font-weight:800;line-height:0.9;color:var(--ink);letter-spacing:-0.03em;}
+  .bignum .n .r{color:var(--redText);}
+  .bignum .c{font-size:24px;color:var(--sub);margin-top:6px;}
+  /* framed footage/photo card */
+  .card{position:absolute;z-index:5;border:3px solid var(--red);background:#111;overflow:hidden;
+        box-shadow:0 18px 50px rgba(0,0,0,0.28);transform-origin:center;}
+  .card img,.card video{width:100%;height:100%;object-fit:cover;display:block;}
+  .card .cap{position:absolute;left:0;bottom:0;background:var(--red);color:#fff;font-size:16px;
+             font-weight:700;letter-spacing:0.06em;padding:5px 12px;text-transform:uppercase;}
+  /* chapter card */
+  #chapter{position:absolute;inset:0;z-index:9;background:#111;color:#f3f1ec;display:flex;
+           flex-direction:column;justify-content:center;padding-left:120px;opacity:0;}
+  #chapter .cn{font-size:120px;font-weight:800;color:var(--redText);line-height:0.9;}
+  #chapter .ct{font-size:66px;font-weight:800;margin-top:10px;}
+  #chapter .cs{font-size:26px;color:#b9b4ab;margin-top:16px;}
+  /* lower-third ticker */
+  #ticker{position:absolute;left:0;right:0;bottom:0;z-index:7;height:66px;display:flex;align-items:stretch;}
+  #ticker .tag{background:var(--red);color:#fff;font-weight:800;font-size:22px;letter-spacing:0.04em;
+               display:flex;align-items:center;padding:0 22px;text-transform:uppercase;}
+  #ticker .txt{background:rgba(245,243,238,0.94);color:var(--ink);font-size:24px;font-weight:600;
+               display:flex;align-items:center;padding:0 24px;flex:1;}
+  /* captions */
+  #capHost{position:absolute;left:0;right:0;bottom:120px;height:120px;z-index:8;text-align:center;}
+  .tcap{display:none;font-size:44px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;
+        padding:0 160px;}
+  .tcap .tw{display:inline-block;opacity:0.4;margin:0 4px;transition:none;}
+  .tcap .tw.on{opacity:1;}
+  .tcap .tw.now{color:var(--redText);}
+  /* end card */
+  #endcard{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;
+           justify-content:center;opacity:0;background:var(--bg);}
+  #endcard .e1{font-size:120px;font-weight:800;letter-spacing:0.16em;color:var(--ink);}
+  #endcard .e2{font-size:30px;color:var(--sub);margin-top:12px;}
+  #endcard .e3{font-size:15px;color:#9a958c;margin-top:30px;max-width:720px;text-align:center;line-height:1.5;}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="42.0"
+       data-width="1920" data-height="1080">
+
+    <div id="bg" class="clip" data-start="0" data-duration="42.0" data-layout-allow-overflow>
+      <svg id="bgsvg"></svg>
+    </div>
+
+    <div id="brand" class="clip" data-start="0" data-duration="42.0">
+      <div class="b1">TSCS</div><div class="b2">TSCS Analysis</div>
+    </div>
+    <div id="foot" class="clip" data-start="0" data-duration="42.0">01 - THE WORST DAY SINCE 1998</div>
+
+    <!-- graphics layer (svg charts + dom overlays), non-clip children of a clip host -->
+    <div id="stage" class="clip" data-start="0" data-duration="42.0" data-layout-allow-overflow>
+      <svg id="gsvg"></svg>
+
+      <!-- opening map title -->
+      <div class="ttitle" id="t_worst" style="opacity:0">
+        <div class="k">Jakarta / market report</div>
+        <div class="h">Indonesia's <span class="r">worst day</span><br>since 1998.</div>
+        <div class="s">11.6% of the market evaporated in one day.</div>
+      </div>
+
+      <!-- big number: $270bn -->
+      <div class="bignum" id="t_bn" style="left:620px;top:360px;opacity:0">
+        <div class="n"><span class="r">$270</span>bn</div>
+        <div class="c">of share value gone since January</div>
+      </div>
+
+      <!-- MSCI card -->
+      <div class="card" id="t_msci" style="left:1180px;top:300px;width:520px;height:300px;opacity:0">
+        <img src="assets/msci.jpg" alt="">
+        <div class="cap">MSCI / writes the list</div>
+      </div>
+      <div class="chip" id="t_msci_chip" style="left:1150px;top:250px;opacity:0">-11.6%</div>
+
+      <!-- "look at the banks" bar chart -->
+      <svg id="banksvg" style="position:absolute;inset:0;width:1920px;height:1080px;overflow:visible"></svg>
+      <div class="ttitle" id="t_banks" style="opacity:0;top:120px">
+        <div class="k">The real suspect</div>
+        <div class="h">Look at the <span class="r">banks.</span></div>
+      </div>
+    </div>
+
+    <!-- lower-third ticker (early news-channel look) -->
+    <div id="ticker" class="clip" data-start="0" data-duration="42.0" style="opacity:0">
+      <div class="tag" id="tk_tag">Market downgrade risk</div>
+      <div class="txt" id="tk_txt">IDX closes down 11.6%, its steepest one-day fall since 1998.</div>
+    </div>
+
+    <!-- chapter card -->
+    <div id="chapter" class="clip" data-start="0" data-duration="42.0" data-layout-allow-overflow>
+      <div class="cn">01</div>
+      <div class="ct">The worst day<br>since 1998</div>
+      <div class="cs">Who really crashed Indonesia?</div>
+    </div>
+
+    <!-- captions -->
+    <div id="capHost" class="clip" data-start="0" data-duration="42.0" data-layout-allow-overflow></div>
+
+    <!-- end card -->
+    <div id="endcard" class="clip" data-start="0" data-duration="42.0" data-layout-allow-overflow>
+      <div class="e1">TSCS</div>
+      <div class="e2">Follow the dividend.</div>
+      <div class="e3">General research for education, not investment advice. Do your own due diligence. Past performance is not a guide to future returns.</div>
+    </div>
+
+    <!-- sound -->
+    <audio id="voice" class="clip" src="assets/voice.wav" data-start="0" data-duration="37.89" data-volume="1.0"></audio>
+    <audio id="music" class="clip" src="assets/music.wav" data-start="0" data-duration="38.0" data-volume="0.13"></audio>
+    <audio id="music2" class="clip" src="assets/music.wav" data-start="38.0" data-duration="4.0" data-volume="0.13" data-fade-out="1.6"></audio>
+    <audio id="s_impact" class="clip" src="assets/impact.wav" data-start="5.0" data-duration="2.0" data-volume="0.7"></audio>
+    <audio id="s_whoosh" class="clip" src="assets/whoosh_a.wav" data-start="30.5" data-duration="0.9" data-volume="0.5"></audio>
+    <audio id="s_pop1" class="clip" src="assets/pop.wav" data-start="10.8" data-duration="0.2" data-volume="0.6"></audio>
+    <audio id="s_pop2" class="clip" src="assets/pop.wav" data-start="17.8" data-duration="0.2" data-volume="0.6"></audio>
+  </div>
+
+<script>
+  const W = 1920, H = 1080;
+  TSCS.init();
+  const cue = TSCS.cue, ramp = TSCS.ramp;
+
+  // background contour
+  TSCS.contour(document.getElementById("bgsvg"), W, H, 11);
+
+  // elements
+  const el = (id) => document.getElementById(id);
+  const gsvg = el("gsvg"), banksvg = el("banksvg");
+
+  // "look at the banks" chart: three banks already down before MSCI, index up
+  const bankChart = TSCS.barChart({
+    svg: banksvg, x: 540, y: 430, w: 840, h: 400, max: 30,
+    cueOn: cue("banks", "banks") + 0.3, span: 0.9, stagger: 0.7,
+    bars: [
+      { label: "Bank 1", value: 26, value_label: "-26%", color: "#8d1b2d" },
+      { label: "Bank 2", value: 27, value_label: "-27%", color: "#8d1b2d" },
+      { label: "Bank 3", value: 25, value_label: "-25%", color: "#8d1b2d" },
+      { label: "Index", value: 19, value_label: "+19%", color: "#9c968b" },
+    ],
+  });
+
+  // chapter card timing: a quick title slate at the very start, 0 -> 2.2s
+  function chapter(t) {
+    const inn = ramp(t, 0.0, 0.3), out = ramp(t, 1.8, 2.3);
+    el("chapter").style.opacity = (inn * (1 - out)).toFixed(3);
+  }
+  // end card: only the very last beat, after the banks chart has shown
+  function endcard(t) {
+    const inn = ramp(t, 40.4, 41.2);
+    el("endcard").style.opacity = inn.toFixed(3);
+  }
+
+  function renderAt(t) {
+    chapter(t);
+
+    // title "worst day" after chapter clears, while billions number builds
+    TSCS.title(el("t_worst"), t, 2.4, cue("billions") + 0.2);
+
+    // $270bn number
+    TSCS.chip(el("t_bn"), t, cue("billions", "270"), cue("msci") - 0.1);
+
+    // ticker visible during the first two beats
+    el("ticker").style.opacity = (ramp(t, 2.6, 3.1) * (1 - ramp(t, cue("msci") - 0.3, cue("msci") + 0.2))).toFixed(3);
+
+    // MSCI card + chip
+    TSCS.card(el("t_msci"), t, cue("msci", "MSCI"), cue("kick") + 0.4);
+    TSCS.chip(el("t_msci_chip"), t, cue("msci", "MSCI") + 0.3, cue("kick") + 0.3);
+
+    // "look at the banks" title + chart in the final beat (runs past the voice)
+    TSCS.title(el("t_banks"), t, cue("banks", "look") - 0.1, 40.3);
+    bankChart.draw(t);
+
+    endcard(t);
+  }
+
+  // captions
+  const renderCaps = TSCS.captions(el("capHost"),
+    (window.__TIMING && window.__TIMING.segments) || []);
+
+  window.addEventListener("hf-seek", (e) => { renderAt(e.detail.time); renderCaps(e.detail.time); });
+  renderAt(0);
+
+  // registered timeline (required, spans full length) - pure padding, no per-frame work here
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  tl.to({}, { duration: 42.0 }, 0);
+  window.__timelines["main"] = tl;
+</script>
+</body>
+</html>
