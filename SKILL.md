@@ -99,7 +99,7 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
 
 1. **Script** `script.json`: a hook (the worst number), one segment per beat (each beat = one
    chart / number / card), a payoff. `"rate": "+6%"` ~150 wpm. One `id` per beat -> animation cue.
-2. **Voice**: `python ...\tools\tts.py script.json --out assets` -> `voice.wav` + `timing.js`.
+2. **Voice**: Gemini with feeling - `vm voice <name>` (project.json `"voice": {"engine": "gemini"}`), see "Voice with feeling". edge-tts (`tts.py`) only if Automated Lunch Free is not available.
    Then `python ...\tools\words.py assets\timing.json` to copy exact cue words.
 3. **Sound**: `python ...\3d-motion-video\scripts\make_audio.py --out assets --duration <len> --bpm 92 --mood dark`.
 4. **Project**: make `assets lib renders`; copy `templates\index.html` -> `index.html`,
