@@ -1,0 +1,25 @@
+{
+  "name": "indo",
+  "fps": 30,
+  "duration": 16,
+  "style": "satellite",
+  "projection": "globe",
+  "width": 1920,
+  "height": 1080,
+  "places": [
+    { "id": "jakarta",  "lng": 106.827, "lat": -6.175 },
+    { "id": "surabaya", "lng": 112.738, "lat": -7.246 },
+    { "id": "medan",    "lng": 98.674,  "lat": 3.589 },
+    { "id": "bandung",  "lng": 107.607, "lat": -6.922 },
+    { "id": "makassar", "lng": 119.412, "lat": -5.134 },
+    { "id": "semarang", "lng": 110.423, "lat": -6.990 },
+    { "id": "denpasar", "lng": 115.218, "lat": -8.665 },
+    { "id": "palembang","lng": 104.757, "lat": -2.989 }
+  ],
+  "keys": [
+    { "t": 0,  "lng": 118, "lat": -2, "zoom": 2.2, "pitch": 0, "bearing": 0 },
+    { "t": 4,  "lng": 117, "lat": -2.2, "zoom": 4.4, "pitch": 0, "bearing": 0, "arc": 0.6 },
+    { "t": 10, "lng": 115, "lat": -2.5, "zoom": 4.7, "pitch": 18, "bearing": -6 },
+    { "t": 16, "lng": 114, "lat": -2.7, "zoom": 4.9, "pitch": 24, "bearing": -12 }
+  ]
+}

@@ -312,6 +312,53 @@
     } };
   };
 
+  // ---- real-footage / real-document / baked-map card with a SOURCE credit tab ----
+  // Every real asset on screen gets a visible credit. cfg.sourceName looks up
+  // window.__CREDITS[name] (written by get_footage.py / get_image.py / your own line).
+  // These are just helpers over the .card / .doc pattern; the markup lives in index.html.
+  // footageCard(el, t, cueOn, cueOff): slide a framed <video>/<img> card in, hold, out.
+  TSCS.footageCard = function (el, t, cueOn, cueOff) { return TSCS.card(el, t, cueOn, cueOff); };
+
+  // docZoom: push the camera (a CSS transform on a wrapper) toward a boxed line on a
+  // document image, and sweep a red highlight over it on the spoken word.
+  // cfg {wrap, box:{x,y,w,h} in image px, imgW, imgH, viewW, viewH, hlEl, cueIn, cueHold, cueHi}
+  TSCS.docZoom = function (cfg) {
+    return { draw(t) {
+      const inn = TSCS.ramp(t, cfg.cueIn, cfg.cueIn + 1.0);
+      // target scale so the box fills ~70% of the view width
+      const targetS = (cfg.viewW * 0.7) / cfg.box.w;
+      const s = 1 + (targetS - 1) * inn;
+      // translate so the box centre moves to the view centre
+      const bcx = cfg.box.x + cfg.box.w / 2, bcy = cfg.box.y + cfg.box.h / 2;
+      const tx = (cfg.viewW / 2 - bcx * s) * inn;
+      const ty = (cfg.viewH / 2 - bcy * s) * inn;
+      cfg.wrap.style.transformOrigin = "0 0";
+      cfg.wrap.style.transform = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${s.toFixed(3)})`;
+      if (cfg.hlEl) {
+        const sweep = TSCS.ramp(t, cfg.cueHi, cfg.cueHi + 0.6);
+        cfg.hlEl.style.transformOrigin = "left center";
+        cfg.hlEl.style.transform = `scaleX(${sweep.toFixed(3)})`;
+        cfg.hlEl.style.left = cfg.box.x + "px"; cfg.hlEl.style.top = cfg.box.y + "px";
+        cfg.hlEl.style.width = cfg.box.w + "px"; cfg.hlEl.style.height = cfg.box.h + "px";
+      }
+    } };
+  };
+
+  // mapReveal: a baked satellite-map <video> under the graphics; fade it in, let the
+  // city dots (separate absolutely-positioned DOM) pop on their cues, title lands.
+  // cfg {mapEl, dots:[{el,cueOn}], cueIn, cueOut}
+  TSCS.mapReveal = function (cfg) {
+    return { draw(t) {
+      const o = TSCS.ramp(t, cfg.cueIn, cfg.cueIn + 0.8) * (1 - TSCS.ramp(t, cfg.cueOut, cfg.cueOut + 0.6));
+      cfg.mapEl.style.opacity = o.toFixed(3);
+      (cfg.dots || []).forEach((d) => {
+        const a = TSCS.ramp(t, d.cueOn, d.cueOn + 0.25);
+        d.el.style.opacity = (a * o).toFixed(3);
+        d.el.style.transform = `scale(${(0.4 + 0.6 * a).toFixed(3)})`;
+      });
+    } };
+  };
+
   // ---- generic staged reveal: fade a list of DOM els in one after another ----
   TSCS.stage = function (els, t, cueOn, stagger, dur) {
     els.forEach((el, i) => {

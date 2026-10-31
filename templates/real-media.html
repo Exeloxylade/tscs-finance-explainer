@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="lib/tscs.js"></script>
+<style>
+  :root{--bg:#f3f1ec;--ink:#141414;--sub:#6b6b6b;--red:#8d1b2d;--redText:#a8203a;--grid:#ddd8cf;--font:"Inter","Segoe UI",Arial,sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:#000;}
+  #root{position:relative;width:1920px;height:1080px;font-family:var(--font);color:var(--ink);background:var(--bg);}
+  #bg{position:absolute;inset:0;z-index:0;background:var(--bg);}#bg svg{width:1920px;height:1080px;}
+  #brand{position:absolute;right:54px;top:40px;z-index:9;text-align:right;}
+  #brand .b1{font-size:30px;font-weight:800;letter-spacing:0.18em;}#brand .b2{font-size:15px;letter-spacing:0.14em;color:var(--sub);}
+  .src{position:absolute;z-index:9;font-size:16px;font-weight:600;color:#fff;background:rgba(20,20,20,0.72);padding:6px 12px;border-radius:3px;letter-spacing:0.02em;}
+  .ttl{position:absolute;left:96px;top:70px;z-index:8;}
+  .ttl .k{font-size:22px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:var(--redText);}
+  .ttl .h{font-size:58px;font-weight:800;margin-top:8px;}.ttl .h .r{color:var(--redText);}
+  .ttl.ondark .h{color:#f3f1ec;}
+  /* SCENE A: real map */
+  #mapwrap{position:absolute;inset:0;z-index:1;opacity:0;}
+  #mapvid{width:1920px;height:1080px;object-fit:cover;filter:brightness(0.62) saturate(0.9);}
+  .dot{position:absolute;z-index:3;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(141,27,45,0.35),0 0 18px rgba(168,32,58,0.9);opacity:0;}
+  /* SCENE B: real document */
+  #docscene{position:absolute;inset:0;z-index:4;background:var(--bg);opacity:0;overflow:hidden;}
+  #docview{position:absolute;left:460px;top:120px;width:1000px;height:840px;border:3px solid var(--red);overflow:hidden;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+  #docwrap{position:absolute;left:0;top:0;width:3840px;}
+  #docwrap img{width:3840px;display:block;}
+  #hl{position:absolute;background:rgba(141,27,45,0.32);border-bottom:4px solid var(--red);z-index:2;transform:scaleX(0);}
+  /* SCENE C: real footage */
+  #footscene{position:absolute;inset:0;z-index:5;background:#0b0e14;opacity:0;}
+  #footcard{position:absolute;left:360px;top:200px;width:1200px;height:680px;border:3px solid var(--red);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+  #footcard video{width:100%;height:100%;object-fit:cover;}
+  #footcap{position:absolute;left:0;bottom:0;background:var(--red);color:#fff;font-size:18px;font-weight:700;padding:7px 16px;letter-spacing:0.05em;text-transform:uppercase;}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="24.0" data-width="1920" data-height="1080">
+    <div id="bg" class="clip" data-start="0" data-duration="24.0"><svg id="bgsvg"></svg></div>
+    <div id="brand" class="clip" data-start="0" data-duration="24.0"><div class="b1">TSCS</div><div class="b2">TSCS Analysis</div></div>
+
+    <!-- SCENE A: REAL baked satellite map (0-8s) -->
+    <div id="mapwrap" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
+      <video id="mapvid" class="clip" src="assets/indo.mp4" data-start="0" data-duration="16" muted playsinline></video>
+    </div>
+    <div id="dots" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow></div>
+    <div class="ttl ondark" id="ttlA" style="opacity:0"><div class="k">Jakarta / market report</div><div class="h">Indonesia's <span class="r">worst day</span> since 1998.</div></div>
+    <div class="src" id="srcA" style="left:54px;bottom:34px;opacity:0">Map: Esri World Imagery / OpenStreetMap</div>
+
+    <!-- SCENE B: REAL document, camera zooms to a boxed line (8-16s) -->
+    <div id="docscene" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
+      <div id="docview"><div id="docwrap"><img src="assets/msci_doc.png"><div id="hl"></div></div></div>
+    </div>
+    <div class="ttl" id="ttlB" style="opacity:0"><div class="k">The source, on screen</div><div class="h">MSCI writes <span class="r">the index.</span></div></div>
+    <div class="src" id="srcB" style="left:54px;bottom:34px;opacity:0">Source: Wikipedia, "MSCI" (en.wikipedia.org/wiki/MSCI)</div>
+
+    <!-- SCENE C: REAL footage card (16-24s) -->
+    <div id="footscene" class="clip" data-start="0" data-duration="24.0" data-layout-allow-overflow>
+      <div id="footcard"><video id="footvid" class="clip" src="assets/floor.mp4" data-start="16" data-duration="8" muted playsinline></video><div id="footcap">Nederlands Instituut voor Beeld en Geluid / Wikimedia, CC BY-SA 3.0</div></div>
+    </div>
+    <div class="ttl ondark" id="ttlC" style="opacity:0"><div class="k">Real footage</div><div class="h">Pulled from the <span class="r">source.</span></div></div>
+    <div class="src" id="srcC" style="left:54px;bottom:34px;opacity:0">Footage: Wikimedia Commons (credit per clip)</div>
+
+    <audio id="sil" class="clip" src="assets/indo.mp4" data-start="0" data-duration="0.1" data-volume="0"></audio>
+  </div>
+<script>
+  const W=1920,H=1080; const ramp=(t,a,b)=>TSCS.ramp(t,a,b); const el=(id)=>document.getElementById(id);
+  TSCS.PAL=TSCS.PAL||{}; TSCS.init&&TSCS.init();
+  TSCS.contour(el("bgsvg"),W,H,11);
+
+  // city dots from the baked track
+  const track = window.__INDO_TRACK || null;
+  // build 8 dots; positions come from indo-track.json injected below
+  const CITIES=["jakarta","surabaya","medan","bandung","makassar","semarang","denpasar","palembang"];
+  const dotEls={}; CITIES.forEach((c,i)=>{ const d=document.createElement("div"); d.className="dot"; d.id="dot_"+c; el("dots").appendChild(d); dotEls[c]=d; });
+
+  function sceneOpacity(t,a,b){ return ramp(t,a,a+0.6)*(1-ramp(t,b-0.6,b)); }
+
+  function renderAt(t){
+    // SCENE A map 0-8
+    const oa=sceneOpacity(t,0.2,8);
+    el("mapwrap").style.opacity=oa.toFixed(3);
+    el("dots").style.opacity=oa.toFixed(3);
+    TSCS.title(el("ttlA"),t,1.0,7.6);
+    el("srcA").style.opacity=(ramp(t,1.2,1.8)*(1-ramp(t,7.4,8))).toFixed(3);
+    // place + pop dots from the baked track (xy[frame] = [[x,y],...] in places order)
+    if(track && track.xy){ const fi=Math.min(track.xy.length-1, Math.round(t*(track.fps||30))); const fr=track.xy[fi]||[];
+      track.places.forEach((c,i)=>{ const p=fr[i]; const d=dotEls[c]; if(p&&d){ d.style.left=p[0]+"px"; d.style.top=p[1]+"px";
+        const on=ramp(t, 2.0+i*0.5, 2.0+i*0.5+0.25); d.style.opacity=(on*oa).toFixed(3); d.style.transform=`scale(${(0.4+0.6*on).toFixed(2)})`; } }); }
+
+    // SCENE B document 8-16
+    const ob=sceneOpacity(t,8,16);
+    el("docscene").style.opacity=ob.toFixed(3);
+    TSCS.title(el("ttlB"),t,8.6,15.6);
+    el("srcB").style.opacity=(ramp(t,8.8,9.4)*(1-ramp(t,15.4,16))).toFixed(3);
+    // zoom wrap toward the boxed phrase [2480,1839,269x32] in a 1000x840 view, scaled from 3840-wide img
+    const viewW=1000, imgW=3840, baseS=viewW/imgW; // fit width
+    const box={x:2480,y:1839,w:269,h:32};
+    const zin=ramp(t,9.2,12.5);
+    const targetS=(viewW*0.6)/ (box.w) ; // fill 60% of view width with the phrase
+    const s=baseS + (targetS-baseS)*zin;
+    const bcx=box.x+box.w/2, bcy=box.y+box.h/2;
+    const tx = (viewW/2 - bcx*s), ty=(840/2 - bcy*s);
+    const tx0 = 0, ty0=0; // start top-left fit
+    el("docwrap").style.transformOrigin="0 0";
+    el("docwrap").style.transform=`translate(${(tx0+(tx-tx0)*zin).toFixed(1)}px,${(ty0+(ty-ty0)*zin).toFixed(1)}px) scale(${s.toFixed(4)})`;
+    const sweep=ramp(t,12.6,13.4);
+    el("hl").style.left=box.x+"px"; el("hl").style.top=box.y+"px"; el("hl").style.width=box.w+"px"; el("hl").style.height=box.h+"px";
+    el("hl").style.transformOrigin="left center"; el("hl").style.transform=`scaleX(${sweep.toFixed(3)})`;
+
+    // SCENE C footage 16-24
+    const oc=sceneOpacity(t,16,23.6);
+    el("footscene").style.opacity=oc.toFixed(3);
+    TSCS.title(el("ttlC"),t,16.6,23.2);
+    el("srcC").style.opacity=(ramp(t,16.8,17.4)*(1-ramp(t,23,23.6))).toFixed(3);
+  }
+  window.addEventListener("hf-seek",(e)=>renderAt(e.detail.time)); renderAt(0);
+  window.__timelines=window.__timelines||{}; const tl=gsap.timeline({paused:true}); tl.to({},{duration:24.0},0); window.__timelines["main"]=tl;
+</script>
+<script src="assets/indo-track-win.js"></script>
+</body>
+</html>

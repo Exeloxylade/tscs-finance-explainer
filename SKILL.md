@@ -25,6 +25,42 @@ Calm, fast VO (~150 wpm). Target ~-15 LUFS.
 | `templates/index.html` | A ~40s opening film (own voice). Copy for a short piece. |
 | `templates/index-3min.html` | The full 3-minute 6-scene film (reused original audio): hook -> MSCI-did-it -> banks dual-line -> who-crashed dot-grid + doc cards -> three suspects -> chapter-1 MSCI tiers. Copy this for a long, multi-scene finance breakdown. |
 
+## Real media: map + document + footage (the news workflow)
+This style is for REAL news, so it pulls in real sources and SHOWS the source on screen
+(you also credit in the video description). Three capabilities, each with a visible credit:
+
+**A. Real satellite MAP opener** (the dark globe diving to Indonesia with city dots).
+Use the `map-video` skill's baker - it is free + keyless on Esri imagery:
+1. Nominatim (1 req/s, with a User-Agent) for each city's lat/lng.
+2. `map\shots.json`: `"style":"satellite"` (NOT "dark" - CartoDB dark now needs an API key),
+   `"projection":"globe"`, `places[]` for every dot, `keys[]` for the camera (globe -> dive).
+   Stills check first: `node bake-map.mjs shots.json --stills 0,8,16`.
+3. Full bake (background): `Start-Process node bake-map.mjs ...` -> `indo.mp4` + `indo-track.json`
+   (per-frame screen x/y of each place, as `xy[frame] = [[x,y],...]` in `places` order).
+4. In the film: `<video src="assets/indo.mp4" muted>` under the graphics (filter brightness 0.6
+   to darken like the original), city dots = absolutely-positioned DOM moved from the track each
+   frame (`TSCS.mapReveal`). Credit on screen: "Map: Esri World Imagery / OpenStreetMap".
+
+**B. Real DOCUMENT, zoom to the exact line.** Use `ai-news-video\tools\capture.mjs`:
+`node capture.mjs <url> --out source --name doc --phrases phrases.json` -> `doc.png` (3840 wide)
++ `doc.boxes.json` (phrase boxes in PNG px). Put the PNG in a red-bordered `#docview` with an
+inner `#docwrap` you transform; `TSCS.docZoom({wrap,box,...})` pushes the camera to the box and
+sweeps a red `#hl` highlight over the line on the spoken word. Credit: 'Source: <site>, "<title>" (<url>)'.
+
+**C. Real FOOTAGE card.** `video-automation\tools\get_footage.py`:
+- Wikimedia: `get_footage.py "<query>" --out assets --name clip --list` then `--pick N --start s --dur d`.
+- The SOURCE's own clip (the realistic path for news): download it yourself (yt-dlp etc.), then
+  `get_footage.py --file <path> --name clip --credit "<source>"` to convert + credit.
+Put `<video src="assets/clip.mp4" muted>` in a red-bordered card; `TSCS.footageCard(el,t,on,off)`
+slides it in. The on-card caption IS the credit (from `window.__CREDITS[name]` or your `--credit`).
+
+Rule: EVERY real asset shows its source on screen. Copyright is handled by crediting on screen +
+in the description; keep excerpts short and commentary-driven (fair use), rebuild numbers as your
+own charts, and never present another channel's footage as your own unlabelled.
+
+Runtime helpers for all three: `TSCS.mapReveal`, `TSCS.docZoom`, `TSCS.footageCard` (in `tscs.js`).
+Template: `templates\real-media.html` (map -> document -> footage, each credited).
+
 ## Reuse the original audio (exact-copy mode)
 When the goal is a 1:1 timing copy, skip `tts.py` and use the source's own audio:
 1. `ffmpeg -ss 0 -t <sec> -i <ref.mp4> -vn -c:a pcm_s16le -ar 48000 assets/voice.wav` (voice+music together).
