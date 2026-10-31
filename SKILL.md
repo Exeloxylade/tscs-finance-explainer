@@ -5,6 +5,8 @@ description: Make a TSCS-style finance / markets documentary video in code - the
 
 # tscs-finance-explainer: the finance-documentary look in code
 
+> **Read ..\video-automation\QUALITY.md first.** Start every film with `vm new <name> --from indo-crash`; never from a blank page.
+
 The look (reverse-engineered from TSCS "WTF Just Happened to Indonesia", 2026):
 off-white paper background with faint grey topographic contour lines; one dark red
 accent (`#8d1b2d` fill, `#a8203a` text) over black/grey text; a bold sans title top-left
@@ -146,7 +148,7 @@ Start-Process node_modules\electron\dist\electron.exe -ArgumentList 'scripts/voi
 Tested: 342 words, 134 s, Whisper matched 336; loudness range 4.6 LU vs 3.7 for edge-tts.
 
 ## Cue-driven film (every time follows the voice)
-`templates\film.html` + `scripts\build_film.py`: the film never holds a hand-typed second. JS uses
+`templates\film.html` (lives in a project as `src\film.html`) + `scripts\build_film.py` + `templates\project.json`: the film never holds a hand-typed second. Fastest start: `vm new <name> --from indo-crash`, then `vm all <name>`. JS uses
 `S(seg)`, `E(seg)`, `W(seg, word)` from timing.js; `<video>`/`<audio>` start times are tokens
 (`__DUR__`, `__BOARD__`, `<!--SFX-->`) that `build_film.py` fills from timing.json. New voice take ->
 `python build_film.py` -> render. Motion helpers in the template (use them on every element):
@@ -179,6 +181,19 @@ Template `templates\technique-linechart.html` (27 s, own script). Numbers measur
 - Stamp: red, ExtraBold 40 px, rotated -2 deg, lands from scale 1.25 on the number word, impact SFX.
 - Something new appears every 1-2 s. No camera move on this scene.
 Fonts: Poppins (OFL, Google Fonts) in `lib/fonts`, loaded with @font-face - system fonts do not match.
+
+## Technique: document card + highlighter (measured, eye-checked)
+Template `templates\technique-document.html` (14 s, self-contained). Numbers measured at 1920x1080:
+- Paper `#f3f1ec` background with faint contour lines `TSCS.contour(svg, 1920, 1080, 14)`.
+- Viewport `#docview`: x 120, top 250, 960x640 px, border 4 px solid `#8d1b2d`, box-shadow `0 24px 70px rgba(0,0,0,0.32)`, `overflow: hidden`.
+- Document image: 3840 px wide high-res capture (`capture.mjs`). Overview scale `s0 = 960 / 3840 = 0.25`.
+- Target phrase box: `box = { x, y, w, h }` in 3840 px coordinates.
+- Camera push: smooth 2.0 s ease from overview (`s0`) to close-up `s1 = (viewW * 0.68) / box.w`.
+- Red highlighter `#dochl`: `background: rgba(141,27,45,0.32); border-bottom: 6px solid #8d1b2d;` sweeps `scaleX(0 -> 1)` over 0.8 s across the phrase on the spoken cue.
+- Chip: x 1140, top 250, red `#8d1b2d` background, white text, 18 px uppercase, pops in before the highlight.
+- Side card `.doc-card`: x 1140, top 310, width 660 px, background `#fbfaf6`, border 3 px solid `#8d1b2d`, shadow `0 18px 50px rgba(0,0,0,0.18)`.
+- Synchronized quote highlight: `background: linear-gradient(90deg, rgba(168,32,58,0.25) 0 var(--p), transparent var(--p))` sweeping at the exact same moment as the document line.
+- Audio: `swish_a.wav` (vol 0.22) on entry; `tick.wav` (vol 0.30) on highlight sweep trigger.
 
 ## Full news explainer template (best result so far)
 `templates\news-explainer.html` - 2 min 24 s, 20 scenes, own script + own edge-tts voice,
