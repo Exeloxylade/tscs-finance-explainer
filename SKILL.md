@@ -131,6 +131,13 @@ tools, NOT PowerShell `Set-Content -NoNewline` (it double-encodes `-`, `.`, `/` 
   their numbers - is for learning or a private remake, not for re-publishing as your own.
   Swap owned footage/logos for free or original assets before anything goes public.
 
+## Technique: transition sound (measured)
+Reference transitions (first 3 min, 13 cuts): bright part ~0.2 s, +19.4 dB in 4-8 kHz over its surroundings,
++4.9 dB low body. The old 0.9 s whoosh was 3.5x longer and played at 0.45-0.6 under a -1 dBFS peak.
+Use `swish_a/b/c.wav` (make_audio.py) at 0.55, 0.15 s after each cut; `tick.wav` 0.5 for chips; `thud.wav` 0.6
+for a stamp. No risers. Verify with `video-automation\tools\sfx_probe.py`. Result on `videos\indo-crash`:
++17.1 dB / 0.20 s / +6.4 dB, film at -13.8 LUFS.
+
 ## Technique: data line chart with photo cards (measured, eye-checked)
 Template `templates\technique-linechart.html` (27 s, own script). Numbers measured at 1920x1080:
 - Paper `#e9e8e6`, contour lines `TSCS.topo({levels:34, scale:1600, octaves:3, stroke:"#c6c2bd", width:2.6})`.
